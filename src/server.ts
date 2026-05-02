@@ -72,10 +72,11 @@ app.use('/', studentRoutes);
 app.use('/', adminRoutes);
 
 // Init DB and start server
-initDb();
-app.listen(PORT, () => {
-  console.log(` * Serving EvolveX (Node.js/TypeScript) on http://127.0.0.1:${PORT}`);
-  console.log(' * Debug mode: on');
-});
+initDb().then(() => {
+  app.listen(PORT, () => {
+    console.log(` * Serving EvolveX (Node.js/TypeScript) on http://127.0.0.1:${PORT}`);
+    console.log(' * Debug mode: on');
+  });
+}).catch(console.error);
 
 export default app;

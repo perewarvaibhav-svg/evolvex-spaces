@@ -17,11 +17,11 @@ const SESSIONS_DATA = [
 ];
 
 // GET /
-router.get('/', (req: Request, res: Response) => {
-  const students = leaderboard();
-  const stats: any = query("SELECT COUNT(*) c, COALESCE(SUM(points),0) p, COALESCE(SUM(revenue),0) r FROM users WHERE role='student'", [], true);
-  const featured: any = query('SELECT * FROM users WHERE featured=1 AND role=\'student\' LIMIT 1', [], true) || (students[0] || null);
-  const win: any = query('SELECT wins.*, users.name FROM wins LEFT JOIN users ON users.id=wins.user_id WHERE wins.featured=1 ORDER BY wins.id DESC LIMIT 1', [], true);
+router.get('/', async (req: Request, res: Response) => {
+  const students = await leaderboard();
+  const stats: any = await query("SELECT COUNT(*) c, COALESCE(SUM(points),0) p, COALESCE(SUM(revenue),0) r FROM users WHERE role='student'", [], true);
+  const featured: any = await query('SELECT * FROM users WHERE featured=1 AND role=\'student\' LIMIT 1', [], true) || (students[0] || null);
+  const win: any = await query('SELECT wins.*, users.name FROM wins LEFT JOIN users ON users.id=wins.user_id WHERE wins.featured=1 ORDER BY wins.id DESC LIMIT 1', [], true);
   res.render('home.html', { students, top5: students.slice(0, 5), stats, featured, win });
 });
 
@@ -31,37 +31,37 @@ router.get('/sessions', (req: Request, res: Response) => {
 });
 
 // GET /leaderboard
-router.get('/leaderboard', (req: Request, res: Response) => {
-  const students = leaderboard();
+router.get('/leaderboard', async (req: Request, res: Response) => {
+  const students = await leaderboard();
   res.render('leaderboard.html', { students, top3: students.slice(0, 3) });
 });
 
 // GET /student/:id
-router.get('/student/:user_id', (req: Request, res: Response) => {
+router.get('/student/:user_id', async (req: Request, res: Response) => {
   const userId = parseInt(req.params.user_id, 10);
-  const student: any = query("SELECT * FROM users WHERE id=? AND role='student' AND is_public=1", [userId], true);
+  const student: any = await query("SELECT * FROM users WHERE id=? AND role='student' AND is_public=1", [userId], true);
   if (!student) {
     (req as any).flash('warning', 'Student profile is private or not found.');
     return res.redirect('/leaderboard');
   }
-  const journey = query('SELECT * FROM journey WHERE user_id=? ORDER BY created_at DESC', [userId]);
-  const badges = query('SELECT * FROM badges WHERE user_id=?', [userId]);
+  const journey = await query('SELECT * FROM journey WHERE user_id=? ORDER BY created_at DESC', [userId]);
+  const badges = await query('SELECT * FROM badges WHERE user_id=?', [userId]);
   res.render('profile.html', { student, journey, badges });
 });
 
 // GET /login  POST /login
 router.get('/login', (req: Request, res: Response) => res.render('login.html'));
 
-router.post('/login', (req: Request, res: Response) => {
+router.post('/login', async (req: Request, res: Response) => {
   const email = (req.body.email || '').trim().toLowerCase();
   const password = req.body.password || '';
-  const user: any = query('SELECT * FROM users WHERE email=?', [email], true);
+  const user: any = await query('SELECT * FROM users WHERE email=?', [email], true);
   if (user && checkPassword(password, user.password_hash)) {
-    req.session.regenerate((err) => {
+    req.session.regenerate(async (err) => {
       (req.session as any).user_id = user.id;
       (req.session as any).role = user.role;
       (req.session as any).name = user.name;
-      recordDailyLogin(user.id);
+      await recordDailyLogin(user.id);
       (req as any).flash('success', 'Logged in successfully.');
       res.redirect('/dashboard');
     });
