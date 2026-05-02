@@ -71,12 +71,15 @@ app.use('/', publicRoutes);
 app.use('/', studentRoutes);
 app.use('/', adminRoutes);
 
-// Init DB and start server
-initDb().then(() => {
+// Init DB
+initDb().catch(console.error);
+
+// Start server if not running in a serverless environment like Vercel
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log(` * Serving EvolveX (Node.js/TypeScript) on http://127.0.0.1:${PORT}`);
     console.log(' * Debug mode: on');
   });
-}).catch(console.error);
+}
 
-export default app;
+module.exports = app;
