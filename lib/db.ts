@@ -20,11 +20,17 @@ function convertSql(sql: string): string {
 }
 
 export async function execute(sql: string, params: any[] = []): Promise<any> {
+  if (!connectionString) {
+    throw new Error("DATABASE_URL is missing. Please create .env.local with your Supabase Postgres string.");
+  }
   const res = await pool.query(convertSql(sql), params);
   return res;
 }
 
 export async function query<T = any>(sql: string, params: any[] = [], one = false): Promise<any> {
+  if (!connectionString) {
+    throw new Error("DATABASE_URL is missing. Please create .env.local with your Supabase Postgres string.");
+  }
   const res = await pool.query(convertSql(sql), params);
   if (one) return res.rows[0] ?? null;
   return res.rows;
@@ -50,6 +56,10 @@ export function hashPassword(password: string): string {
 }
 
 export async function initDb(): Promise<void> {
+  if (!connectionString) {
+    console.error("Skipping DB init: DATABASE_URL is missing.");
+    return;
+  }
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users(
       id SERIAL PRIMARY KEY, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL,
