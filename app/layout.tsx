@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import Navbar from '@/components/Navbar';
 import FlashMessages from '@/components/FlashMessages';
+import ClientScripts from '@/components/ClientScripts';
 import { getSession } from '@/lib/session';
 
 export const metadata: Metadata = {
@@ -48,6 +49,3 @@ export default async function RootLayout({
     </html>
   );
 }
-
-// Client component to handle the global scripts
-import ClientScripts from '@/components/ClientScripts';

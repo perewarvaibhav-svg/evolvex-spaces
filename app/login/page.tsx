@@ -1,6 +1,6 @@
 export default function Login() {
   return (
-    <div className="auth reveal-up">
+    <div className="auth">
       <div className="card">
         <h2>Welcome Back</h2>
         <p className="muted">Enter your email and password to sign in.</p>
