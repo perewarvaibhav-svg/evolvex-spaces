@@ -15,6 +15,9 @@ export default function Login() {
           </label>
           <button className="btn big">Log in to Dashboard</button>
         </form>
+        <div style={{ marginTop: 24, textAlign: 'center' }}>
+          <p className="muted">Don't have an account? <a href="/register" style={{ color: 'var(--ink-primary)', fontWeight: 600 }}>Register Now</a></p>
+        </div>
       </div>
     </div>
   );
