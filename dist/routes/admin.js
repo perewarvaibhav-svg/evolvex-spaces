@@ -1,0 +1,111 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const db_1 = require("../db");
+const helpers_1 = require("../helpers");
+const middleware_1 = require("../middleware");
+const db_2 = require("../db");
+const sync_1 = require("csv-stringify/sync");
+const router = (0, express_1.Router)();
+// GET /admin
+router.get('/admin', (0, middleware_1.loginRequired)('admin'), async (req, res) => {
+    const students = await (0, db_1.query)("SELECT * FROM users WHERE role='student' ORDER BY points DESC");
+    const tasks = await (0, db_1.query)('SELECT * FROM tasks ORDER BY week, due_date, id');
+    const wins = await (0, db_1.query)('SELECT wins.*, users.name FROM wins LEFT JOIN users ON users.id=wins.user_id ORDER BY wins.id DESC');
+    const attendanceEvents = await (0, db_1.query)('SELECT * FROM attendance_events ORDER BY event_date DESC, id DESC');
+    res.render('admin_dashboard.html', { students, tasks, wins, attendance_events: attendanceEvents });
+});
+// POST /admin/add-students
+router.post('/admin/add-students', (0, middleware_1.loginRequired)('admin'), async (req, res) => {
+    const raw = req.body.emails || '';
+    const emails = raw.replace(/\n/g, ',').split(',').map((e) => e.trim().toLowerCase()).filter(Boolean);
+    for (const email of emails) {
+        if (!email.includes('@') || await (0, db_1.query)('SELECT id FROM users WHERE email=?', [email], true))
+            continue;
+        const temp = (0, helpers_1.makePassword)();
+        const name = email.split('@')[0].replace(/\./g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+        await (0, db_1.execute)('INSERT INTO users(name,email,password_hash,role,project_name,one_liner,problem,project_link,linkedin,category,stage,is_public,must_change_password,quote) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)', [name, email, (0, db_2.hashPassword)(temp), 'student', '', '', '', '', '', 'Other', '', 0, 1, '']);
+        (0, helpers_1.sendEmail)(email, 'Your EvolveX login setup', `Hi ${name},\n\nYour EvolveX student profile has been created.\n\nLogin email: ${email}\nTemporary password: ${temp}\n\nPlease login, change your password from My Profile, and complete your profile.\n\n- EvolveX Team`);
+    }
+    req.flash('success', 'Status updated.');
+    res.redirect('/admin');
+});
+// POST /admin/attendance-event
+router.post('/admin/attendance-event', (0, middleware_1.loginRequired)('admin'), async (req, res) => {
+    await (0, db_1.execute)('INSERT INTO attendance_events(title,event_date,event_type,mode,points,description,created_at) VALUES(?,?,?,?,?,?,?)', [req.body.title, req.body.event_date, req.body.event_type, req.body.mode || 'Offline', parseInt(req.body.points || 15), req.body.description || '', (0, helpers_1.nowIso)()]);
+    req.flash('success', 'Status updated.');
+    res.redirect('/admin');
+});
+// POST /admin/task
+router.post('/admin/task', (0, middleware_1.loginRequired)('admin'), async (req, res) => {
+    const taskId = req.body.task_id;
+    const payload = [req.body.week, req.body.title, req.body.description || '', req.body.points, req.body.due_date];
+    if (taskId) {
+        await (0, db_1.execute)('UPDATE tasks SET week=?, title=?, description=?, points=?, due_date=? WHERE id=?', [...payload, taskId]);
+    }
+    else {
+        await (0, db_1.execute)('INSERT INTO tasks(week,title,description,points,due_date) VALUES(?,?,?,?,?)', payload);
+    }
+    req.flash('success', 'Status updated.');
+    res.redirect('/admin');
+});
+// POST /admin/task/:id/delete
+router.post('/admin/task/:task_id/delete', (0, middleware_1.loginRequired)('admin'), async (req, res) => {
+    const taskId = parseInt(req.params.task_id, 10);
+    await (0, db_1.execute)('DELETE FROM submissions WHERE task_id=?', [taskId]);
+    await (0, db_1.execute)('DELETE FROM tasks WHERE id=?', [taskId]);
+    req.flash('success', 'Status updated.');
+    res.redirect('/admin');
+});
+// POST /admin/student/:id
+router.post('/admin/student/:user_id', (0, middleware_1.loginRequired)('admin'), async (req, res) => {
+    const userId = parseInt(req.params.user_id, 10);
+    const featured = req.body.featured ? 1 : 0;
+    if (featured) {
+        await (0, db_1.execute)("UPDATE users SET featured=0 WHERE role='student'");
+        await (0, helpers_1.grantBadge)(userId, 'Student of the Week', req.body.sow_description || 'Selected as Student of the Week by the EvolveX team.', req.body.sow_date || (0, helpers_1.todayIso)());
+    }
+    await (0, db_1.execute)('UPDATE users SET stage=?, featured=?, is_public=? WHERE id=?', [req.body.stage, featured, req.body.is_public ? 1 : 0, userId]);
+    await (0, db_1.execute)('INSERT INTO journey(user_id,event_type,title,details,created_at) VALUES(?,?,?,?,?)', [userId, 'stage', `Stage updated to ${req.body.stage}`, 'Updated by admin', (0, helpers_1.nowIso)()]);
+    req.flash('success', 'Status updated.');
+    res.redirect('/admin');
+});
+// POST /admin/win
+router.post('/admin/win', (0, middleware_1.loginRequired)('admin'), async (req, res) => {
+    if (req.body.featured)
+        await (0, db_1.execute)('UPDATE wins SET featured=0');
+    const userId = req.body.user_id || null;
+    const student = userId ? await (0, db_1.query)('SELECT name FROM users WHERE id=?', [userId], true) : null;
+    const title = student ? `${student.name} — Student of the Week` : 'EvolveX Win';
+    await (0, db_1.execute)('INSERT INTO wins(user_id,title,description,featured,created_at) VALUES(?,?,?,?,?)', [userId, title, req.body.description || '', req.body.featured ? 1 : 0, (0, helpers_1.nowIso)()]);
+    if (userId) {
+        await (0, db_1.execute)("UPDATE users SET featured=0 WHERE role='student'");
+        await (0, db_1.execute)('UPDATE users SET featured=1 WHERE id=?', [userId]);
+        await (0, helpers_1.grantBadge)(parseInt(userId), 'Student of the Week', req.body.description || 'Selected as Student of the Week by the EvolveX team.', (0, helpers_1.todayIso)());
+    }
+    req.flash('success', 'Status updated.');
+    res.redirect('/admin');
+});
+// GET /admin/export.csv
+router.get('/admin/export.csv', (0, middleware_1.loginRequired)('admin'), async (req, res) => {
+    const rows = await (0, db_1.query)("SELECT name,project_name,points,tasks_done,customer_convos,sessions_attended,revenue,streak,last_active FROM users WHERE role='student' ORDER BY points DESC");
+    const csv = (0, sync_1.stringify)([
+        ['Name', 'Project', 'Points', 'Tasks Done', 'Customer Conversation Days', 'Sessions Attended', 'Revenue', 'Login Streak', 'Last Active'],
+        ...rows.map(r => [r.name, r.project_name, r.points, r.tasks_done, r.customer_convos, r.sessions_attended, r.revenue, r.streak, r.last_active])
+    ]);
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename=evolvex_leaderboard.csv');
+    res.send(csv);
+});
+// GET /admin/attendance-report.csv
+router.get('/admin/attendance-report.csv', (0, middleware_1.loginRequired)('admin'), async (req, res) => {
+    const rows = await (0, db_1.query)(`SELECT e.event_date, e.title, e.event_type, e.mode event_mode, u.name, u.email, COALESCE(a.status,'Not Marked') status, a.mode, a.reason, a.takeaway, COALESCE(a.points_awarded,0) points FROM attendance_events e CROSS JOIN users u LEFT JOIN attendance a ON a.event_id=e.id AND a.user_id=u.id WHERE u.role='student' ORDER BY e.event_date DESC, e.id DESC, u.name`);
+    const csv = (0, sync_1.stringify)([
+        ['Event Date', 'Event', 'Type', 'Default Mode', 'Student', 'Email', 'Status', 'Student Mode', 'Reason', 'Takeaway', 'Points'],
+        ...rows.map(r => [r.event_date, r.title, r.event_type, r.event_mode, r.name, r.email, r.status, r.mode, r.reason, r.takeaway, r.points])
+    ]);
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename=evolvex_attendance_report.csv');
+    res.send(csv);
+});
+exports.default = router;
