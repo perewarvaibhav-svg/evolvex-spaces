@@ -54,8 +54,13 @@
 
 * { box-sizing: border-box; }
 
-body {
+body, html {
   margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+body {
   font-family: 'Manrope', -apple-system, sans-serif;
   background: var(--bg-primary);
   color: var(--ink-primary);
@@ -472,12 +477,14 @@ textarea { min-height: 120px; resize: vertical; }
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    width: 24px;
-    height: 18px;
+    width: 28px;
+    height: 20px;
     background: transparent;
     border: none;
     cursor: pointer;
-    z-index: 100;
+    z-index: 9999;
+    position: relative;
+    padding: 0;
   }
   
   .hamburger .bar {
@@ -488,31 +495,35 @@ textarea { min-height: 120px; resize: vertical; }
     border-radius: 10px;
   }
   
-  .hamburger.open .bar:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+  .hamburger.open .bar:nth-child(1) { transform: translateY(9px) rotate(45deg); }
   .hamburger.open .bar:nth-child(2) { opacity: 0; }
-  .hamburger.open .bar:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+  .hamburger.open .bar:nth-child(3) { transform: translateY(-9px) rotate(-45deg); }
   
   .nav-links {
     position: fixed;
     top: 0;
-    right: -100%;
-    width: 100vw;
+    left: 0;
+    width: 100%;
     height: 100vh;
     background: var(--bg-primary);
+    display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    transition: 0.4s ease-in-out;
-    z-index: 90;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    transform: translateX(100%);
+    z-index: 9998;
     gap: 32px;
     font-size: 24px;
+    margin: 0;
+    padding: 0;
   }
   
   .nav-links.active {
-    right: 0;
+    transform: translateX(0);
   }
   
-  .nav-links .btn { width: 80%; text-align: center; }
+  .nav-links .btn { width: 80%; text-align: center; font-size: 18px; padding: 16px; }
   .profile { flex-direction: column; text-align: center; }
   .podium { grid-template-columns: 1fr; gap: 40px; }
   .rank-bubble { top: -28px; left: 50%; transform: translateX(-50%); }
