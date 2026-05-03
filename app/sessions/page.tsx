@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 const SESSIONS_DATA = [
   { title: 'The Beginning', date: '21 March', speaker: 'Karthik Nagapuri', linkedin: 'https://www.linkedin.com/in/karthiknagpuri/', image: 'session1.jpg', tag: 'Introductions & Goals', description: 'Our journey started with introductions, goals, startup ideas, and the first spark of turning thoughts into real systems.' },
@@ -28,8 +29,13 @@ export default function Sessions() {
         {SESSIONS_DATA.map((s, i) => (
           <div key={i} className="session-card stagger-in">
             <div className="session-image-box">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={`/static/images/${s.image}`} alt={s.title} />
+              <Image 
+                src={`/static/images/sessions/${s.image}`} 
+                alt={s.title} 
+                fill 
+                style={{ objectFit: 'cover' }}
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
               <div className="session-tag">{s.tag}</div>
             </div>
             <div className="session-content">

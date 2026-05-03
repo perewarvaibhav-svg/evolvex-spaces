@@ -158,8 +158,7 @@ export default async function Home() {
 
           <div className="evolvex-gallery">
               <div className="gallery-card gallery-large stagger-in parallax-img">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/static/images/team/team.jpg" alt="EvolveX team meetup" />
+                  <Image src="/static/images/team/team.jpg" alt="EvolveX team meetup" fill style={{ objectFit: 'cover' }} sizes="(max-width: 900px) 100vw, 33vw" />
                   <div className="gallery-overlay">
                       <span>Community Moments</span>
                       <h3>Building together</h3>
@@ -167,8 +166,7 @@ export default async function Home() {
               </div>
 
               <div className="gallery-card gallery-tall stagger-in parallax-img">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/static/images/team/team1.jpg" alt="EvolveX rooftop team" />
+                  <Image src="/static/images/team/team1.jpg" alt="EvolveX rooftop team" fill style={{ objectFit: 'cover' }} sizes="(max-width: 900px) 100vw, 33vw" />
                   <div className="gallery-overlay">
                       <span>Rooftop Energy</span>
                       <h3>Ideas with a view</h3>
@@ -176,8 +174,7 @@ export default async function Home() {
               </div>
 
               <div className="gallery-card stagger-in">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/static/images/team/team2.jpg" alt="EvolveX team" />
+                  <Image src="/static/images/team/team2.jpg" alt="EvolveX team" fill style={{ objectFit: 'cover' }} sizes="(max-width: 900px) 100vw, 33vw" />
                   <div className="gallery-overlay">
                       <span>Meetups</span>
                       <h3>Showing up</h3>
@@ -185,8 +182,7 @@ export default async function Home() {
               </div>
 
               <div className="gallery-card stagger-in parallax-img">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/static/images/team/team3.jpg" alt="EvolveX project expo" />
+                  <Image src="/static/images/team/team3.jpg" alt="EvolveX project expo" fill style={{ objectFit: 'cover' }} sizes="(max-width: 900px) 100vw, 33vw" />
                   <div className="gallery-overlay">
                       <span>Exposure</span>
                       <h3>Learning outside rooms</h3>
@@ -194,8 +190,7 @@ export default async function Home() {
               </div>
 
               <div className="gallery-card gallery-wide stagger-in parallax-img">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/static/images/team/session.jpg" alt="EvolveX speaker session" />
+                  <Image src="/static/images/team/session.jpg" alt="EvolveX speaker session" fill style={{ objectFit: 'cover' }} sizes="(max-width: 900px) 100vw, 33vw" />
                   <div className="gallery-overlay">
                       <span>Speaker Sessions</span>
                       <h3>Listening, questioning, evolving</h3>
