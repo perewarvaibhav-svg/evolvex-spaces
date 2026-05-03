@@ -25,10 +25,7 @@ export default function Navbar({ session }: { session: { user_id?: number, role?
             <a className="btn ghost" href="/api/auth/logout">Logout</a>
           </>
         ) : (
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <Link className="btn ghost" href="/login" onClick={() => setIsOpen(false)}>Login</Link>
-            <Link className="btn" href="/register" onClick={() => setIsOpen(false)}>Register</Link>
-          </div>
+          <Link className="btn" href="/login" onClick={() => setIsOpen(false)}>Login</Link>
         )}
       </div>
     </nav>
