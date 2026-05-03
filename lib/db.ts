@@ -2,8 +2,15 @@ import { Pool } from 'pg';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 
+const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+
+if (!connectionString) {
+  console.error("CRITICAL ERROR: DATABASE_URL or POSTGRES_URL environment variable is missing.");
+  console.error("Please create a .env.local file with your Supabase PostgreSQL connection string.");
+}
+
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || process.env.POSTGRES_URL,
+  connectionString,
   ssl: { rejectUnauthorized: false },
 });
 
