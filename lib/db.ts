@@ -1,39 +1,22 @@
-import { Pool } from 'pg';
+import Database from 'better-sqlite3';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import path from 'path';
 
-const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
-
-if (!connectionString) {
-  console.error("CRITICAL ERROR: DATABASE_URL or POSTGRES_URL environment variable is missing.");
-  console.error("Please create a .env.local file with your Supabase PostgreSQL connection string.");
-}
-
-const pool = new Pool({
-  connectionString,
-  ssl: { rejectUnauthorized: false },
-});
-
-function convertSql(sql: string): string {
-  let i = 1;
-  return sql.replace(/\?/g, () => `$${i++}`);
-}
+const dbPath = path.join(process.cwd(), 'evolvex.db');
+const db = new Database(dbPath);
 
 export async function execute(sql: string, params: any[] = []): Promise<any> {
-  if (!connectionString) {
-    throw new Error("DATABASE_URL is missing. Please create .env.local with your Supabase Postgres string.");
-  }
-  const res = await pool.query(convertSql(sql), params);
-  return res;
+  const stmt = db.prepare(sql);
+  return stmt.run(...params);
 }
 
 export async function query<T = any>(sql: string, params: any[] = [], one = false): Promise<any> {
-  if (!connectionString) {
-    throw new Error("DATABASE_URL is missing. Please create .env.local with your Supabase Postgres string.");
+  const stmt = db.prepare(sql);
+  if (one) {
+    return stmt.get(...params) ?? null;
   }
-  const res = await pool.query(convertSql(sql), params);
-  if (one) return res.rows[0] ?? null;
-  return res.rows;
+  return stmt.all(...params);
 }
 
 export function checkPassword(password: string, hash: string): boolean {
@@ -56,13 +39,9 @@ export function hashPassword(password: string): string {
 }
 
 export async function initDb(): Promise<void> {
-  if (!connectionString) {
-    console.error("Skipping DB init: DATABASE_URL is missing.");
-    return;
-  }
-  await pool.query(`
+  db.exec(`
     CREATE TABLE IF NOT EXISTS users(
-      id SERIAL PRIMARY KEY, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL,
+      id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL,
       role TEXT NOT NULL DEFAULT 'student', photo TEXT DEFAULT 'https://api.dicebear.com/8.x/shapes/svg?seed=evolvex',
       project_name TEXT DEFAULT '', one_liner TEXT DEFAULT '', problem TEXT DEFAULT '', project_link TEXT DEFAULT '', linkedin TEXT DEFAULT '',
       category TEXT DEFAULT 'Other', stage TEXT DEFAULT 'Idea', is_public INTEGER DEFAULT 1, featured INTEGER DEFAULT 0,
@@ -70,14 +49,14 @@ export async function initDb(): Promise<void> {
       customer_convos INTEGER DEFAULT 0, sessions_attended INTEGER DEFAULT 0, streak INTEGER DEFAULT 0, last_active TEXT DEFAULT '',
       last_login_date TEXT DEFAULT '', login_streak INTEGER DEFAULT 0, must_change_password INTEGER DEFAULT 0
     );
-    CREATE TABLE IF NOT EXISTS tasks(id SERIAL PRIMARY KEY, week INTEGER NOT NULL, title TEXT NOT NULL, description TEXT NOT NULL, points INTEGER NOT NULL, due_date TEXT NOT NULL);
-    CREATE TABLE IF NOT EXISTS submissions(id SERIAL PRIMARY KEY, user_id INTEGER NOT NULL, task_id INTEGER NOT NULL, status TEXT NOT NULL DEFAULT 'Not Started', work_note TEXT DEFAULT '', proof_link TEXT DEFAULT '', submitted_at TEXT DEFAULT '', points_awarded INTEGER DEFAULT 0, UNIQUE(user_id, task_id));
-    CREATE TABLE IF NOT EXISTS activities(id SERIAL PRIMARY KEY, user_id INTEGER NOT NULL, type TEXT NOT NULL, title TEXT NOT NULL, description TEXT DEFAULT '', amount REAL DEFAULT 0, customer_count INTEGER DEFAULT 0, created_at TEXT NOT NULL);
-    CREATE TABLE IF NOT EXISTS journey(id SERIAL PRIMARY KEY, user_id INTEGER NOT NULL, event_type TEXT NOT NULL, title TEXT NOT NULL, details TEXT DEFAULT '', created_at TEXT NOT NULL);
-    CREATE TABLE IF NOT EXISTS badges(id SERIAL PRIMARY KEY, user_id INTEGER NOT NULL, name TEXT NOT NULL, description TEXT DEFAULT '', earned_on TEXT NOT NULL);
-    CREATE TABLE IF NOT EXISTS wins(id SERIAL PRIMARY KEY, user_id INTEGER, title TEXT NOT NULL, description TEXT DEFAULT '', featured INTEGER DEFAULT 0, created_at TEXT NOT NULL);
-    CREATE TABLE IF NOT EXISTS attendance_events(id SERIAL PRIMARY KEY, title TEXT NOT NULL, event_date TEXT NOT NULL, event_type TEXT NOT NULL, mode TEXT DEFAULT 'Offline', points INTEGER DEFAULT 15, description TEXT DEFAULT '', created_at TEXT NOT NULL);
-    CREATE TABLE IF NOT EXISTS attendance(id SERIAL PRIMARY KEY, event_id INTEGER NOT NULL, user_id INTEGER NOT NULL, status TEXT NOT NULL, mode TEXT DEFAULT '', reason TEXT DEFAULT '', takeaway TEXT DEFAULT '', marked_at TEXT NOT NULL, points_awarded INTEGER DEFAULT 0, UNIQUE(event_id, user_id));
+    CREATE TABLE IF NOT EXISTS tasks(id INTEGER PRIMARY KEY AUTOINCREMENT, week INTEGER NOT NULL, title TEXT NOT NULL, description TEXT NOT NULL, points INTEGER NOT NULL, due_date TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS submissions(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, task_id INTEGER NOT NULL, status TEXT NOT NULL DEFAULT 'Not Started', work_note TEXT DEFAULT '', proof_link TEXT DEFAULT '', submitted_at TEXT DEFAULT '', points_awarded INTEGER DEFAULT 0, UNIQUE(user_id, task_id));
+    CREATE TABLE IF NOT EXISTS activities(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, type TEXT NOT NULL, title TEXT NOT NULL, description TEXT DEFAULT '', amount REAL DEFAULT 0, customer_count INTEGER DEFAULT 0, created_at TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS journey(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, event_type TEXT NOT NULL, title TEXT NOT NULL, details TEXT DEFAULT '', created_at TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS badges(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, name TEXT NOT NULL, description TEXT DEFAULT '', earned_on TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS wins(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, title TEXT NOT NULL, description TEXT DEFAULT '', featured INTEGER DEFAULT 0, created_at TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS attendance_events(id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, event_date TEXT NOT NULL, event_type TEXT NOT NULL, mode TEXT DEFAULT 'Offline', points INTEGER DEFAULT 15, description TEXT DEFAULT '', created_at TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS attendance(id INTEGER PRIMARY KEY AUTOINCREMENT, event_id INTEGER NOT NULL, user_id INTEGER NOT NULL, status TEXT NOT NULL, mode TEXT DEFAULT '', reason TEXT DEFAULT '', takeaway TEXT DEFAULT '', marked_at TEXT NOT NULL, points_awarded INTEGER DEFAULT 0, UNIQUE(event_id, user_id));
   `);
 
   const colChecks: [string, string, string][] = [
@@ -88,11 +67,11 @@ export async function initDb(): Promise<void> {
     ['activities', 'customer_count', 'INTEGER DEFAULT 0'],
   ];
   for (const [table, col, def] of colChecks) {
-    try { await pool.query(`ALTER TABLE ${table} ADD COLUMN IF NOT EXISTS ${col} ${def}`); } catch(e) {}
+    try { db.exec(`ALTER TABLE ${table} ADD COLUMN ${col} ${def}`); } catch(e) {}
   }
 
-  const countRes = await pool.query('SELECT COUNT(*) as c FROM users');
-  const count = parseInt(countRes.rows[0].c, 10);
+  const countRes = db.prepare('SELECT COUNT(*) as c FROM users').get() as any;
+  const count = parseInt(countRes.c, 10);
   if (count === 0) {
     const COHORT_START = new Date('2026-03-22');
     const nowIso = () => new Date().toISOString().slice(0, 16).replace('T', ' ');
