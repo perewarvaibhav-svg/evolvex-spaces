@@ -1,24 +1,81 @@
-import Database from 'better-sqlite3';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
-import path from 'path';
 
-const dbPath = path.join(process.cwd(), 'evolvex.db');
-const db = new Database(dbPath);
+// ---------------------------------------------------------------------------
+// Supabase client — singleton, server-side only (service role key bypasses RLS)
+// ---------------------------------------------------------------------------
 
-export async function execute(sql: string, params: any[] = []): Promise<any> {
-  const stmt = db.prepare(sql);
-  return stmt.run(...params);
+declare global {
+  // eslint-disable-next-line no-var
+  var _supabase: SupabaseClient | undefined;
 }
 
-export async function query<T = any>(sql: string, params: any[] = [], one = false): Promise<any> {
-  const stmt = db.prepare(sql);
-  if (one) {
-    return stmt.get(...params) ?? null;
+function createSupabase(): SupabaseClient {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) {
+    throw new Error(
+      'Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY environment variables.'
+    );
   }
-  return stmt.all(...params);
+  return createClient(url, key, {
+    auth: { persistSession: false },
+  });
 }
 
+const supabase: SupabaseClient =
+  process.env.NODE_ENV === 'development'
+    ? (globalThis._supabase ?? (globalThis._supabase = createSupabase()))
+    : createSupabase();
+
+export { supabase };
+export default supabase;
+
+// ---------------------------------------------------------------------------
+// execute() — INSERT / UPDATE / DELETE
+// Calls the `supabase_execute` RPC defined in schema.sql.
+// Converts ? placeholders to $1, $2, … automatically.
+// ---------------------------------------------------------------------------
+export async function execute(sql: string, params: any[] = []): Promise<any> {
+  const pgSql = toPositional(sql);
+  const { data, error } = await supabase.rpc('supabase_execute', {
+    query_text: pgSql,
+    query_params: params.map(String),
+  });
+  if (error) throw new Error(`DB execute error: ${error.message}\nSQL: ${pgSql}`);
+  return data;
+}
+
+// ---------------------------------------------------------------------------
+// query() — SELECT
+// Calls the `supabase_query` RPC defined in schema.sql.
+// Returns all rows, or a single row when one=true.
+// ---------------------------------------------------------------------------
+export async function query<T = any>(
+  sql: string,
+  params: any[] = [],
+  one = false
+): Promise<any> {
+  const pgSql = toPositional(sql);
+  const { data, error } = await supabase.rpc('supabase_query', {
+    query_text: pgSql,
+    query_params: params.map(String),
+  });
+  if (error) throw new Error(`DB query error: ${error.message}\nSQL: ${pgSql}`);
+  const rows = (data ?? []) as T[];
+  return one ? (rows[0] ?? null) : rows;
+}
+
+/** Replace ? placeholders with PostgreSQL $1, $2, … */
+function toPositional(sql: string): string {
+  let i = 0;
+  return sql.replace(/\?/g, () => `$${++i}`);
+}
+
+// ---------------------------------------------------------------------------
+// Password utilities
+// ---------------------------------------------------------------------------
 export function checkPassword(password: string, hash: string): boolean {
   if (hash.startsWith('$2')) return bcrypt.compareSync(password, hash);
   const parts = hash.split('$');
@@ -28,77 +85,92 @@ export function checkPassword(password: string, hash: string): boolean {
   if (mp.length < 3 || mp[0] !== 'pbkdf2') return false;
   try {
     const derived = crypto
-      .pbkdf2Sync(Buffer.from(password), Buffer.from(salt), parseInt(mp[2], 10), Math.floor(storedHex.length / 2), mp[1])
+      .pbkdf2Sync(
+        Buffer.from(password),
+        Buffer.from(salt),
+        parseInt(mp[2], 10),
+        Math.floor(storedHex.length / 2),
+        mp[1]
+      )
       .toString('hex');
     return derived === storedHex;
-  } catch { return false; }
+  } catch {
+    return false;
+  }
 }
 
 export function hashPassword(password: string): string {
   return bcrypt.hashSync(password, 10);
 }
 
+// ---------------------------------------------------------------------------
+// initDb() — seeds data if the users table is empty.
+// Schema (tables + RPC functions) MUST be applied first via schema.sql.
+// ---------------------------------------------------------------------------
 export async function initDb(): Promise<void> {
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS users(
-      id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL,
-      role TEXT NOT NULL DEFAULT 'student', photo TEXT DEFAULT 'https://api.dicebear.com/8.x/shapes/svg?seed=evolvex',
-      project_name TEXT DEFAULT '', one_liner TEXT DEFAULT '', problem TEXT DEFAULT '', project_link TEXT DEFAULT '', linkedin TEXT DEFAULT '',
-      category TEXT DEFAULT 'Other', stage TEXT DEFAULT 'Idea', is_public INTEGER DEFAULT 1, featured INTEGER DEFAULT 0,
-      quote TEXT DEFAULT 'Building one step at a time.', points INTEGER DEFAULT 0, revenue REAL DEFAULT 0, tasks_done INTEGER DEFAULT 0,
-      customer_convos INTEGER DEFAULT 0, sessions_attended INTEGER DEFAULT 0, streak INTEGER DEFAULT 0, last_active TEXT DEFAULT '',
-      last_login_date TEXT DEFAULT '', login_streak INTEGER DEFAULT 0, must_change_password INTEGER DEFAULT 0
-    );
-    CREATE TABLE IF NOT EXISTS tasks(id INTEGER PRIMARY KEY AUTOINCREMENT, week INTEGER NOT NULL, title TEXT NOT NULL, description TEXT NOT NULL, points INTEGER NOT NULL, due_date TEXT NOT NULL);
-    CREATE TABLE IF NOT EXISTS submissions(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, task_id INTEGER NOT NULL, status TEXT NOT NULL DEFAULT 'Not Started', work_note TEXT DEFAULT '', proof_link TEXT DEFAULT '', submitted_at TEXT DEFAULT '', points_awarded INTEGER DEFAULT 0, UNIQUE(user_id, task_id));
-    CREATE TABLE IF NOT EXISTS activities(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, type TEXT NOT NULL, title TEXT NOT NULL, description TEXT DEFAULT '', amount REAL DEFAULT 0, customer_count INTEGER DEFAULT 0, created_at TEXT NOT NULL);
-    CREATE TABLE IF NOT EXISTS journey(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, event_type TEXT NOT NULL, title TEXT NOT NULL, details TEXT DEFAULT '', created_at TEXT NOT NULL);
-    CREATE TABLE IF NOT EXISTS badges(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, name TEXT NOT NULL, description TEXT DEFAULT '', earned_on TEXT NOT NULL);
-    CREATE TABLE IF NOT EXISTS wins(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, title TEXT NOT NULL, description TEXT DEFAULT '', featured INTEGER DEFAULT 0, created_at TEXT NOT NULL);
-    CREATE TABLE IF NOT EXISTS attendance_events(id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, event_date TEXT NOT NULL, event_type TEXT NOT NULL, mode TEXT DEFAULT 'Offline', points INTEGER DEFAULT 15, description TEXT DEFAULT '', created_at TEXT NOT NULL);
-    CREATE TABLE IF NOT EXISTS attendance(id INTEGER PRIMARY KEY AUTOINCREMENT, event_id INTEGER NOT NULL, user_id INTEGER NOT NULL, status TEXT NOT NULL, mode TEXT DEFAULT '', reason TEXT DEFAULT '', takeaway TEXT DEFAULT '', marked_at TEXT NOT NULL, points_awarded INTEGER DEFAULT 0, UNIQUE(event_id, user_id));
-  `);
+  const { data: countData } = await supabase
+    .from('users')
+    .select('id', { count: 'exact', head: true });
 
-  const colChecks: [string, string, string][] = [
-    ['users', 'last_login_date', "TEXT DEFAULT ''"],
-    ['users', 'login_streak', 'INTEGER DEFAULT 0'],
-    ['users', 'must_change_password', 'INTEGER DEFAULT 0'],
-    ['badges', 'description', "TEXT DEFAULT ''"],
-    ['activities', 'customer_count', 'INTEGER DEFAULT 0'],
+  // countData is null for head=true; use count from response
+  const { count } = await supabase
+    .from('users')
+    .select('*', { count: 'exact', head: true });
+
+  if ((count ?? 0) > 0) return;
+
+  const COHORT_START = new Date('2026-03-22');
+  const nowIso = () => new Date().toISOString().slice(0, 16).replace('T', ' ');
+
+  const seedUsers = [
+    { name: 'Admin', email: 'admin@evolvex.in', pwd: 'admin', role: 'admin', proj: 'EvolveX HQ', pub: 0, feat: 0 },
+    { name: 'Lakshmi', email: 'lakshmi@evolvex.in', pwd: 'student', role: 'student', proj: 'EvolveX Project', pub: 1, feat: 1 },
+    { name: 'Ananya', email: 'ananya@evolvex.in', pwd: 'student', role: 'student', proj: 'EvolveX Project', pub: 1, feat: 0 },
+    { name: 'Rahul', email: 'rahul@evolvex.in', pwd: 'student', role: 'student', proj: 'EvolveX Project', pub: 1, feat: 0 },
   ];
-  for (const [table, col, def] of colChecks) {
-    try { db.exec(`ALTER TABLE ${table} ADD COLUMN ${col} ${def}`); } catch(e) {}
+
+  for (const u of seedUsers) {
+    await supabase.from('users').insert({
+      name: u.name,
+      email: u.email,
+      password_hash: hashPassword(u.pwd),
+      role: u.role,
+      project_name: u.proj,
+      one_liner: 'Building for Bharat',
+      problem: '',
+      project_link: 'https://linkedin.com',
+      linkedin: 'https://linkedin.com',
+      category: 'Other',
+      stage: 'Idea',
+      is_public: u.pub,
+      featured: u.feat,
+      quote: 'Building one step at a time.',
+    });
   }
 
-  const countRes = db.prepare('SELECT COUNT(*) as c FROM users').get() as any;
-  const count = parseInt(countRes.c, 10);
-  if (count === 0) {
-    const COHORT_START = new Date('2026-03-22');
-    const nowIso = () => new Date().toISOString().slice(0, 16).replace('T', ' ');
+  for (let i = 1; i <= 12; i++) {
+    const due = new Date(COHORT_START);
+    due.setDate(due.getDate() + i * 7 - 1);
+    const dueStr = due.toISOString().slice(0, 10);
+    await supabase.from('tasks').insert([
+      { week: i, title: `Week ${i}: Founder Progress Update`, description: 'Share what you built, validated, learnt, and what is blocked.', points: 25, due_date: dueStr },
+      { week: i, title: `Week ${i}: Customer Conversation`, description: 'Speak to one target user/customer and record the insight.', points: 20, due_date: dueStr },
+    ]);
+  }
 
-    const seedUsers = [
-      { name: 'Admin', email: 'admin@evolvex.in', pwd: 'admin', role: 'admin', proj: 'EvolveX HQ', pub: 0, feat: 0 },
-      { name: 'Lakshmi', email: 'lakshmi@evolvex.in', pwd: 'student', role: 'student', proj: 'EvolveX Project', pub: 1, feat: 1 },
-      { name: 'Ananya', email: 'ananya@evolvex.in', pwd: 'student', role: 'student', proj: 'EvolveX Project', pub: 1, feat: 0 },
-      { name: 'Rahul', email: 'rahul@evolvex.in', pwd: 'student', role: 'student', proj: 'EvolveX Project', pub: 1, feat: 0 },
-    ];
-    for (const u of seedUsers) {
-      await execute(`INSERT INTO users(name,email,password_hash,role,project_name,one_liner,problem,project_link,linkedin,category,stage,is_public,featured,quote) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
-        [u.name, u.email, hashPassword(u.pwd), u.role, u.proj, 'Building for Bharat', '', 'https://linkedin.com', 'https://linkedin.com', 'Other', 'Idea', u.pub, u.feat, 'Building one step at a time.']);
-    }
+  const { data: lakshmi } = await supabase
+    .from('users')
+    .select('id')
+    .eq('email', 'lakshmi@evolvex.in')
+    .single();
 
-    for (let i = 1; i <= 12; i++) {
-      const due = new Date(COHORT_START);
-      due.setDate(due.getDate() + i * 7 - 1);
-      const dueStr = due.toISOString().slice(0, 10);
-      await execute(`INSERT INTO tasks(week,title,description,points,due_date) VALUES(?,?,?,?,?)`, [i, `Week ${i}: Founder Progress Update`, 'Share what you built, validated, learnt, and what is blocked.', 25, dueStr]);
-      await execute(`INSERT INTO tasks(week,title,description,points,due_date) VALUES(?,?,?,?,?)`, [i, `Week ${i}: Customer Conversation`, 'Speak to one target user/customer and record the insight.', 20, dueStr]);
-    }
-
-    const lakshmi = await query("SELECT id FROM users WHERE email='lakshmi@evolvex.in'", [], true);
-    if (lakshmi) {
-      await execute(`INSERT INTO wins(user_id,title,description,featured,created_at) VALUES(?,?,?,?,?)`,
-        [lakshmi.id, 'Lakshmi — Student of the Week', 'Moved from idea to prototype.', 1, nowIso()]);
-    }
+  if (lakshmi) {
+    await supabase.from('wins').insert({
+      user_id: lakshmi.id,
+      title: 'Lakshmi — Student of the Week',
+      description: 'Moved from idea to prototype.',
+      featured: 1,
+      created_at: nowIso(),
+    });
   }
 }
