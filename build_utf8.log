@@ -1,0 +1,42 @@
+﻿
+> evolvex-nextjs@0.1.0 build
+> next build
+
+Γû▓ Next.js 16.2.4 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 21.8s
+  Running TypeScript ...
+  Finished TypeScript in 26.9s ...
+  Collecting page data using 7 workers ...
+node.exe : Error: Invalid supabaseUrl: Provided URL is malformed.
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Users\Admin\AppData\Roaming\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Invalid ...L is malformed.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+    at <unknown> (C:\Users\Admin\OneDrive\Desktop\EvolveX-app-main\.next\server\chunks\lib_db_ts_0~m90w7._.js:37:45648)
+    at new rP (C:\Users\Admin\OneDrive\Desktop\EvolveX-app-main\.next\server\chunks\lib_db_ts_0~m90w7._.js:37:45706)
+    at <unknown> (C:\Users\Admin\OneDrive\Desktop\EvolveX-app-main\.next\server\chunks\lib_db_ts_0~m90w7._.js:37:68415)
+    at module evaluation 
+(C:\Users\Admin\OneDrive\Desktop\EvolveX-app-main\.next\server\chunks\lib_db_ts_0~m90w7._.js:37:68454)
+    at instantiateModule 
+(C:\Users\Admin\OneDrive\Desktop\EvolveX-app-main\.next\server\chunks\[turbopack]_runtime.js:853:9)
+    at getOrInstantiateModuleFromParent 
+(C:\Users\Admin\OneDrive\Desktop\EvolveX-app-main\.next\server\chunks\[turbopack]_runtime.js:877:12)
+    at Context.esmImport [as i] 
+(C:\Users\Admin\OneDrive\Desktop\EvolveX-app-main\.next\server\chunks\[turbopack]_runtime.js:281:20)
+    at module evaluation 
+(C:\Users\Admin\OneDrive\Desktop\EvolveX-app-main\.next\server\chunks\[root-of-the-server]__0yfp3v2._.js:1:2265)
+    at instantiateModule 
+(C:\Users\Admin\OneDrive\Desktop\EvolveX-app-main\.next\server\chunks\[turbopack]_runtime.js:853:9)
+    at instantiateRuntimeModule 
+(C:\Users\Admin\OneDrive\Desktop\EvolveX-app-main\.next\server\chunks\[turbopack]_runtime.js:882:12)
+
+> Build error occurred
+Error: Failed to collect page data for /api/admin/add-students
+    at ignore-listed frames {
+  type: 'Error'
+}

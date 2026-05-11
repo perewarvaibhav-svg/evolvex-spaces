@@ -1,18 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getIronSession } from 'iron-session';
 import { sessionOptions, SessionData } from '@/lib/session';
-import { query } from '@/lib/db';
-import { checkPassword } from '@/lib/db';
+import { query, checkPassword } from '@/lib/db';
 import { recordDailyLogin } from '@/lib/helpers';
-import { initDb } from '@/lib/db';
-
-let dbInit = false;
-async function ensureDb() {
-  if (!dbInit) { await initDb(); dbInit = true; }
-}
 
 export async function POST(req: NextRequest) {
-  await ensureDb();
   const res = NextResponse.next();
   const session = await getIronSession<SessionData>(req, res, sessionOptions);
   const body = await req.formData();

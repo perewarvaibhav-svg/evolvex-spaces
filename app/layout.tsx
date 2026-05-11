@@ -19,8 +19,7 @@ export default async function RootLayout({
   const messages = session.flash || [];
   
   if (messages.length > 0) {
-    session.flash = [];
-    await session.save();
+    // Note: flash is cleared by /api/flash/clear after display (client-side)
   }
 
   return (

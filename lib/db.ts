@@ -38,7 +38,7 @@ export default supabase;
 // Converts ? placeholders to $1, $2, … automatically.
 // ---------------------------------------------------------------------------
 export async function execute(sql: string, params: any[] = []): Promise<any> {
-  const pgSql = toPositional(sql);
+  const pgSql = addTypeCasts(toPositional(sql), params);
   const { data, error } = await supabase.rpc('supabase_execute', {
     query_text: pgSql,
     query_params: params.map(String),
@@ -57,7 +57,7 @@ export async function query<T = any>(
   params: any[] = [],
   one = false
 ): Promise<any> {
-  const pgSql = toPositional(sql);
+  const pgSql = addTypeCasts(toPositional(sql), params);
   const { data, error } = await supabase.rpc('supabase_query', {
     query_text: pgSql,
     query_params: params.map(String),
@@ -71,6 +71,22 @@ export async function query<T = any>(
 function toPositional(sql: string): string {
   let i = 0;
   return sql.replace(/\?/g, () => `$${++i}`);
+}
+
+/**
+ * Add explicit PG type casts to $N placeholders when the corresponding
+ * JS param is a number — fixes "operator does not exist: integer = text".
+ */
+function addTypeCasts(sql: string, params: any[]): string {
+  return sql.replace(/\$(\d+)/g, (match, numStr) => {
+    const idx = parseInt(numStr, 10) - 1;
+    if (idx < params.length) {
+      const val = params[idx];
+      if (typeof val === 'number' && Number.isInteger(val)) return `$${numStr}::bigint`;
+      if (typeof val === 'number') return `$${numStr}::numeric`;
+    }
+    return match;
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -104,74 +120,9 @@ export function hashPassword(password: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// initDb() — seeds data if the users table is empty.
-// Schema (tables + RPC functions) MUST be applied first via schema.sql.
+// initDb() — no-op for Supabase. Schema is applied via schema.sql in the
+// Supabase SQL editor. Admin users are added directly via SQL.
 // ---------------------------------------------------------------------------
 export async function initDb(): Promise<void> {
-  const { data: countData } = await supabase
-    .from('users')
-    .select('id', { count: 'exact', head: true });
-
-  // countData is null for head=true; use count from response
-  const { count } = await supabase
-    .from('users')
-    .select('*', { count: 'exact', head: true });
-
-  if ((count ?? 0) > 0) return;
-
-  const COHORT_START = new Date('2026-03-22');
-  const nowIso = () => new Date().toISOString().slice(0, 16).replace('T', ' ');
-
-  const seedUsers = [
-    { name: 'Admin', email: 'admin@evolvex.in', pwd: 'admin', role: 'admin', proj: 'EvolveX HQ', pub: 0, feat: 0 },
-    { name: 'Vaibhav', email: 'perewarvaibhav@gmail.com', pwd: 'vibu@2007', role: 'admin', proj: 'EvolveX', pub: 0, feat: 0 },
-    { name: 'Lakshmi', email: 'lakshmi@evolvex.in', pwd: 'student', role: 'student', proj: 'EvolveX Project', pub: 1, feat: 1 },
-    { name: 'Ananya', email: 'ananya@evolvex.in', pwd: 'student', role: 'student', proj: 'EvolveX Project', pub: 1, feat: 0 },
-    { name: 'Rahul', email: 'rahul@evolvex.in', pwd: 'student', role: 'student', proj: 'EvolveX Project', pub: 1, feat: 0 },
-  ];
-
-  for (const u of seedUsers) {
-    await supabase.from('users').insert({
-      name: u.name,
-      email: u.email,
-      password_hash: hashPassword(u.pwd),
-      role: u.role,
-      project_name: u.proj,
-      one_liner: 'Building for Bharat',
-      problem: '',
-      project_link: 'https://linkedin.com',
-      linkedin: 'https://linkedin.com',
-      category: 'Other',
-      stage: 'Idea',
-      is_public: u.pub,
-      featured: u.feat,
-      quote: 'Building one step at a time.',
-    });
-  }
-
-  for (let i = 1; i <= 12; i++) {
-    const due = new Date(COHORT_START);
-    due.setDate(due.getDate() + i * 7 - 1);
-    const dueStr = due.toISOString().slice(0, 10);
-    await supabase.from('tasks').insert([
-      { week: i, title: `Week ${i}: Founder Progress Update`, description: 'Share what you built, validated, learnt, and what is blocked.', points: 25, due_date: dueStr },
-      { week: i, title: `Week ${i}: Customer Conversation`, description: 'Speak to one target user/customer and record the insight.', points: 20, due_date: dueStr },
-    ]);
-  }
-
-  const { data: lakshmi } = await supabase
-    .from('users')
-    .select('id')
-    .eq('email', 'lakshmi@evolvex.in')
-    .single();
-
-  if (lakshmi) {
-    await supabase.from('wins').insert({
-      user_id: lakshmi.id,
-      title: 'Lakshmi — Student of the Week',
-      description: 'Moved from idea to prototype.',
-      featured: 1,
-      created_at: nowIso(),
-    });
-  }
+  // No-op: Supabase schema and seed data managed externally.
 }

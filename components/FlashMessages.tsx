@@ -9,10 +9,16 @@ export default function FlashMessages({ messages: initialMessages }: { messages:
     const params = new URLSearchParams(window.location.search);
     if (params.get('error') === '1') {
       setMessages(prev => [...prev, { cat: 'danger', msg: 'Invalid email or password.' }]);
-      // remove param from URL without reload
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, []);
+
+  // Clear flash from session via Route Handler after displaying
+  useEffect(() => {
+    if (initialMessages && initialMessages.length > 0) {
+      fetch('/api/flash/clear', { method: 'POST' }).catch(() => {});
+    }
+  }, [initialMessages]);
 
   if (!messages || messages.length === 0) return null;
 
