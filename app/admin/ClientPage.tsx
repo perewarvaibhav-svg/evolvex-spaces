@@ -4,7 +4,7 @@ const STAGES_ARR = ['Idea', 'Validated', 'Prototype', 'First Outreach', 'First C
 const EVENT_TYPES_ARR = ['Saturday Session', 'Sunday Session', 'Workshop', 'Mentor Session', 'Founder Pitch', 'Offline Meetup', 'Online Session', 'Other'];
 
 export default function AdminDashboardClient({
-  students, tasks, wins, attendance_events, current_week, today
+  students, tasks, wins, attendance_events, access_requests, current_week, today
 }: any) {
   return (
     <>
@@ -17,6 +17,35 @@ export default function AdminDashboardClient({
         <div>
           <Link className="btn" href="/api/admin/export.csv">Export CSV</Link>{' '}
           <Link className="btn ghost" href="/api/admin/attendance-report.csv">Attendance Report</Link>
+        </div>
+      </section>
+
+      <section className="card reveal-up stagger-in">
+        <h2>Pending Access Requests</h2>
+        <p className="muted">Review requests from interns. Approving will create an account and email them a temporary password.</p>
+        <div className="table-wrap">
+          <table>
+            <thead><tr><th>Name</th><th>Email</th><th>Requested At</th><th>Actions</th></tr></thead>
+            <tbody>
+              {access_requests?.length > 0 ? access_requests.map((r: any) => (
+                <tr key={r.id}>
+                  <td>{r.name}</td>
+                  <td>{r.email}</td>
+                  <td>{r.created_at}</td>
+                  <td style={{ display: 'flex', gap: 8 }}>
+                    <form method="post" action="/api/admin/approve-request" style={{ display: 'inline' }}>
+                      <input type="hidden" name="request_id" value={r.id} />
+                      <button className="btn small">Approve</button>
+                    </form>
+                    <form method="post" action="/api/admin/reject-request" style={{ display: 'inline' }}>
+                      <input type="hidden" name="request_id" value={r.id} />
+                      <button className="btn small ghost" style={{ borderColor: 'var(--danger)', color: 'var(--danger)' }}>Reject</button>
+                    </form>
+                  </td>
+                </tr>
+              )) : <tr><td colSpan={4}>No pending requests.</td></tr>}
+            </tbody>
+          </table>
         </div>
       </section>
 

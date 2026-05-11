@@ -176,3 +176,13 @@ ALTER TABLE badges            DISABLE ROW LEVEL SECURITY;
 ALTER TABLE wins              DISABLE ROW LEVEL SECURITY;
 ALTER TABLE attendance_events DISABLE ROW LEVEL SECURITY;
 ALTER TABLE attendance        DISABLE ROW LEVEL SECURITY;
+
+CREATE TABLE IF NOT EXISTS access_requests (
+  id          SERIAL PRIMARY KEY,
+  name        TEXT NOT NULL,
+  email       TEXT UNIQUE NOT NULL,
+  status      TEXT DEFAULT 'pending',
+  created_at  TEXT NOT NULL
+);
+
+ALTER TABLE access_requests DISABLE ROW LEVEL SECURITY;

@@ -124,6 +124,7 @@ export async function initDb(): Promise<void> {
 
   const seedUsers = [
     { name: 'Admin', email: 'admin@evolvex.in', pwd: 'admin', role: 'admin', proj: 'EvolveX HQ', pub: 0, feat: 0 },
+    { name: 'Vaibhav', email: 'perewarvaibhav@gmail.com', pwd: 'vibu@2007', role: 'admin', proj: 'EvolveX', pub: 0, feat: 0 },
     { name: 'Lakshmi', email: 'lakshmi@evolvex.in', pwd: 'student', role: 'student', proj: 'EvolveX Project', pub: 1, feat: 1 },
     { name: 'Ananya', email: 'ananya@evolvex.in', pwd: 'student', role: 'student', proj: 'EvolveX Project', pub: 1, feat: 0 },
     { name: 'Rahul', email: 'rahul@evolvex.in', pwd: 'student', role: 'student', proj: 'EvolveX Project', pub: 1, feat: 0 },

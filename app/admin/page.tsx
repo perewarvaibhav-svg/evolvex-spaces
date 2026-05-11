@@ -14,6 +14,7 @@ export default async function AdminDashboard() {
   const tasks = await query('SELECT * FROM tasks ORDER BY week, due_date, id');
   const wins = await query('SELECT wins.*, users.name FROM wins LEFT JOIN users ON users.id=wins.user_id ORDER BY wins.id DESC');
   const attendanceEvents = await query('SELECT * FROM attendance_events ORDER BY event_date DESC, id DESC');
+  const accessRequests = await query("SELECT * FROM access_requests WHERE status='pending' ORDER BY id DESC");
 
   return (
     <AdminDashboardClient
@@ -21,6 +22,7 @@ export default async function AdminDashboard() {
       tasks={tasks}
       wins={wins}
       attendance_events={attendanceEvents}
+      access_requests={accessRequests}
       current_week={currentWeek()}
       today={todayIso()}
     />

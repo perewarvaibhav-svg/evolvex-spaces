@@ -15,6 +15,9 @@ export default function Login() {
           </label>
           <button className="btn big">Log in to Dashboard</button>
         </form>
+        <p className="muted" style={{ textAlign: 'center', marginTop: 16 }}>
+          Don't have an account? <a href="/request-access" style={{ color: 'var(--primary)' }}>Request Access</a>
+        </p>
       </div>
     </div>
   );
