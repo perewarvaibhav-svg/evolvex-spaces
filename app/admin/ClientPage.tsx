@@ -120,7 +120,7 @@ export default function AdminDashboardClient({
                     <td colSpan={6} style={{ padding: 0 }}>
                       <form method="post" action="/api/admin/task" style={{ display: 'contents' }}>
                         <input type="hidden" name="task_id" value={t.id} />
-                        <div style={{ display: 'grid', gridTemplateColumns: '80px 200px 1fr 100px 150px 80px 80px', padding: 12, alignItems: 'center' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '80px 200px 1fr 100px 150px 80px 80px', gap: '16px', padding: 12, alignItems: 'center' }}>
                           <input name="week" type="number" min="1" max="12" defaultValue={t.week} style={{ margin: 0 }} />
                           <input name="title" defaultValue={t.title} style={{ margin: 0 }} />
                           <textarea name="description" defaultValue={t.description} style={{ margin: 0, minHeight: 40 }}></textarea>
@@ -155,8 +155,8 @@ export default function AdminDashboardClient({
             <p className="muted">Select the Student of the Week and optionally add a description.</p>
             <form className="form" method="post" action="/api/admin/win">
               <label>Student of the Week
-                <select name="user_id" required>
-                  {students.map((s: any) => <option key={s.id} value={s.id} selected={s.featured === 1}>{s.name}</option>)}
+                <select name="user_id" required defaultValue={students.find((s: any) => s.featured === 1)?.id}>
+                  {students.map((s: any) => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>
               </label>
               <label>Description optional<textarea name="description" placeholder="Example: Shipped prototype, spoke to users, or earned first revenue."></textarea></label>
