@@ -9,6 +9,8 @@ export default function ClientScripts() {
     // Port of app.js
     const clickHandler = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
+      
+      // Handle table row clicks
       const row = target.closest('.click-row') as HTMLElement;
       if (row && row.dataset.href) window.location.href = row.dataset.href;
     };

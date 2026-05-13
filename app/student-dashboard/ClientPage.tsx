@@ -1,4 +1,5 @@
 'use client';
+import { useState } from 'react';
 import { STAGES, CATEGORIES } from '@/lib/helpers'; // need to duplicate arrays here or export from helpers
 
 const STAGES_ARR = ['Idea', 'Validated', 'Prototype', 'First Outreach', 'First Customer', 'Revenue', 'Scaling'];
@@ -7,6 +8,8 @@ const CATEGORIES_ARR = ['AI', 'SaaS', 'Community', 'Health', 'Education', 'Finte
 export default function StudentDashboardClient({
   user, tasks, journey, badges, rank, attendance_events, attendance_history, today_revenue, today_conversation, current_week
 }: any) {
+  const [activeTab, setActiveTab] = useState('activity');
+
   return (
     <>
       <section className="dash-head reveal-up">
@@ -100,12 +103,12 @@ export default function StudentDashboardClient({
       </div>
 
       <div className="tab-buttons">
-        <button className="tab-btn active" data-tab="activity">Log Activity</button>
-        <button className="tab-btn" data-tab="attendance">Attendance</button>
-        <button className="tab-btn" data-tab="journey">My Journey</button>
+        <button type="button" onClick={() => setActiveTab('activity')} className={`tab-btn ${activeTab === 'activity' ? 'active' : ''}`}>Log Activity</button>
+        <button type="button" onClick={() => setActiveTab('attendance')} className={`tab-btn ${activeTab === 'attendance' ? 'active' : ''}`}>Attendance</button>
+        <button type="button" onClick={() => setActiveTab('journey')} className={`tab-btn ${activeTab === 'journey' ? 'active' : ''}`}>My Journey</button>
       </div>
 
-      <div className="tab active" id="activity">
+      <div className={`tab ${activeTab === 'activity' ? 'active' : ''}`} id="activity">
         <div className="grid-2">
           <form className="mini-form" method="post" action="/api/student/activity">
             <input type="hidden" name="type" value="revenue" />
@@ -128,7 +131,7 @@ export default function StudentDashboardClient({
         </div>
       </div>
 
-      <div className="tab" id="attendance">
+      <div className={`tab ${activeTab === 'attendance' ? 'active' : ''}`} id="attendance">
         <h2>Attendance</h2>
         <p className="muted">All admin-created events appear here. Mark attended online/offline, add learning for the day, or give a reason if you did not attend.</p>
         <div className="grid-2">
@@ -170,7 +173,7 @@ export default function StudentDashboardClient({
         </div>
       </div>
 
-      <div className="tab" id="journey">
+      <div className={`tab ${activeTab === 'journey' ? 'active' : ''}`} id="journey">
         <h2>My Journey</h2>
         {badges.map((b: any) => <span key={b.id} className="badge">{b.name}</span>)}
         <div className="journey">

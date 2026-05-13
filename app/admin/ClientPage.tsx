@@ -1,4 +1,5 @@
 'use client';
+import { useState } from 'react';
 import Link from 'next/link';
 const STAGES_ARR = ['Idea', 'Validated', 'Prototype', 'First Outreach', 'First Customer', 'Revenue', 'Scaling'];
 const EVENT_TYPES_ARR = ['Saturday Session', 'Sunday Session', 'Workshop', 'Mentor Session', 'Founder Pitch', 'Offline Meetup', 'Online Session', 'Other'];
@@ -6,6 +7,8 @@ const EVENT_TYPES_ARR = ['Saturday Session', 'Sunday Session', 'Workshop', 'Ment
 export default function AdminDashboardClient({
   students, tasks, wins, attendance_events, access_requests, current_week, today
 }: any) {
+  const [activeTab, setActiveTab] = useState('control-room');
+
   return (
     <>
       <section className="dash-head reveal-up">
@@ -21,12 +24,12 @@ export default function AdminDashboardClient({
       </section>
 
       <div className="tab-buttons" style={{ marginBottom: 32 }}>
-        <button className="tab-btn active" data-tab="control-room">Main Control Room</button>
-        <button className="tab-btn" data-tab="task-manager">Task Manager</button>
-        <button className="tab-btn" data-tab="student-manager">Student Manager</button>
+        <button type="button" onClick={() => setActiveTab('control-room')} className={`tab-btn ${activeTab === 'control-room' ? 'active' : ''}`}>Main Control Room</button>
+        <button type="button" onClick={() => setActiveTab('task-manager')} className={`tab-btn ${activeTab === 'task-manager' ? 'active' : ''}`}>Task Manager</button>
+        <button type="button" onClick={() => setActiveTab('student-manager')} className={`tab-btn ${activeTab === 'student-manager' ? 'active' : ''}`}>Student Manager</button>
       </div>
 
-      <div className="tab active" id="control-room">
+      <div className={`tab ${activeTab === 'control-room' ? 'active' : ''}`} id="control-room">
         <section className="card reveal-up stagger-in">
           <h2>Pending Access Requests</h2>
           <p className="muted">Review requests from interns. Approving will create an account and email them a temporary password.</p>
@@ -95,7 +98,7 @@ export default function AdminDashboardClient({
         </section>
       </div>
 
-      <div className="tab" id="task-manager">
+      <div className={`tab ${activeTab === 'task-manager' ? 'active' : ''}`} id="task-manager">
         <section className="card reveal-up stagger-in">
           <h2>Create Weekly Task</h2>
           <form className="form" method="post" action="/api/admin/task">
@@ -139,7 +142,7 @@ export default function AdminDashboardClient({
         </section>
       </div>
 
-      <div className="tab" id="student-manager">
+      <div className={`tab ${activeTab === 'student-manager' ? 'active' : ''}`} id="student-manager">
         <section className="two-col reveal-up">
           <div className="card stagger-in">
             <h2>Add Student Profiles</h2>
