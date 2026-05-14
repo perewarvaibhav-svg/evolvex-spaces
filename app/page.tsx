@@ -20,13 +20,6 @@ export default async function Home() {
   return (
     <>
       <section className="home-hero-v2 reveal-up">
-        <div className="crazy-bg">
-          <div className="c-blob c-blob-1"></div>
-          <div className="c-blob c-blob-2"></div>
-          <div className="c-blob c-blob-3"></div>
-          <div className="c-blob c-blob-4"></div>
-          <div className="c-glass"></div>
-        </div>
 
         <div className="hero-copy">
           <p className="eyebrow">Cohort 1 · 90-Day Founder Sprint</p>

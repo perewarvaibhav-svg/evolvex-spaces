@@ -31,6 +31,14 @@ export default async function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
       </head>
       <body className="markcon-theme">
+        <div className="global-crazy-bg">
+          <div className="c-blob c-blob-1"></div>
+          <div className="c-blob c-blob-2"></div>
+          <div className="c-blob c-blob-3"></div>
+          <div className="c-blob c-blob-4"></div>
+          <div className="c-glass"></div>
+        </div>
+
         <Navbar session={{ user_id: session.user_id, role: session.role }} />
         
         <main>
