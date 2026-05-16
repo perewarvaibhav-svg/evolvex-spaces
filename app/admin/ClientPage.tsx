@@ -215,7 +215,7 @@ export default function AdminDashboardClient({
                 <tr><th>Student</th><th>Project</th><th>Points</th><th>Revenue</th><th>Tasks</th><th>Convos</th><th>Sessions</th><th>Controls</th></tr>
               </thead>
               <tbody>
-                {students.filter((s: any) => s.name.toLowerCase().includes(searchQuery.toLowerCase()) || (s.project_name && s.project_name.toLowerCase().includes(searchQuery.toLowerCase()))).map((s: any) => (
+                {students.filter((s: any) => (s.name || '').toLowerCase().includes(searchQuery.toLowerCase()) || (s.project_name && s.project_name.toLowerCase().includes(searchQuery.toLowerCase()))).map((s: any) => (
                   <tr key={s.id} className={s.featured ? 'featured-row' : ''}>
                     <td>
                       <Link className="student-link" href={`/student/${s.id}`}>{s.name}</Link>
