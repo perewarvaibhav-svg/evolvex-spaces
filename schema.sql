@@ -32,7 +32,10 @@ CREATE TABLE IF NOT EXISTS users (
   last_active          TEXT DEFAULT '',
   last_login_date      TEXT DEFAULT '',
   login_streak         INTEGER DEFAULT 0,
-  must_change_password INTEGER DEFAULT 0
+  must_change_password INTEGER DEFAULT 0,
+  mobile_number        TEXT DEFAULT '',
+  achievements_text    TEXT DEFAULT '',
+  miscellaneous        TEXT DEFAULT ''
 );
 
 CREATE TABLE IF NOT EXISTS tasks (
@@ -252,7 +255,13 @@ CREATE TABLE IF NOT EXISTS users (
   last_active          TEXT DEFAULT '',
   last_login_date      TEXT DEFAULT '',
   login_streak         INTEGER DEFAULT 0,
-  must_change_password INTEGER DEFAULT 0
+  must_change_password INTEGER DEFAULT 0,
+  mobile_number        TEXT DEFAULT '',
+  achievements_text    TEXT DEFAULT '',
+  miscellaneous        TEXT DEFAULT '',
+  college_name         TEXT DEFAULT '',
+  branch               TEXT DEFAULT '',
+  department           TEXT DEFAULT ''
 );
 
 CREATE TABLE IF NOT EXISTS tasks (

@@ -24,7 +24,7 @@ export function makePassword(): string {
   return crypto.randomBytes(8).toString('base64url').slice(0, 10) + '7!';
 }
 
-export function sendEmail(toEmail: string, subject: string, body: string): boolean {
+export function sendEmail(toEmail: string, subject: string, body: string, options?: { bcc?: string, cc?: string }): boolean {
   const host = process.env.SMTP_HOST;
   const port = parseInt(process.env.SMTP_PORT || '587', 10);
   const username = process.env.SMTP_USERNAME;
@@ -33,6 +33,8 @@ export function sendEmail(toEmail: string, subject: string, body: string): boole
   if (!host || !username || !password) {
     console.log('\n--- EVOLVEX EMAIL PREVIEW ---');
     console.log('To:', toEmail);
+    if (options?.cc) console.log('CC:', options.cc);
+    if (options?.bcc) console.log('BCC:', options.bcc);
     console.log('Subject:', subject);
     console.log(body);
     console.log('--- END EMAIL PREVIEW ---\n');
@@ -43,9 +45,19 @@ export function sendEmail(toEmail: string, subject: string, body: string): boole
     secure: process.env.SMTP_USE_SSL === '1' || port === 465,
     auth: { user: username, pass: password },
   });
-  transporter.sendMail({ from: sender, to: toEmail, subject, text: body })
+  transporter.sendMail({ from: sender, to: toEmail, subject, text: body, bcc: options?.bcc, cc: options?.cc })
     .catch((err: Error) => console.error(`EvolveX email failed for ${toEmail}:`, err));
   return true;
+}
+
+export async function blastEmail(subject: string, body: string): Promise<void> {
+  const students = await query("SELECT email FROM users WHERE role='student'");
+  const admins = await query("SELECT email FROM users WHERE role='admin'");
+  
+  const bccList = students.map((s: any) => s.email).filter(Boolean).join(',');
+  const ccList = admins.map((a: any) => a.email).filter(Boolean).join(',');
+  
+  sendEmail('noreply@evolvex.in', subject, body, { bcc: bccList, cc: ccList });
 }
 
 export async function grantBadge(userId: number, name: string, description = '', earnedOn?: string): Promise<void> {

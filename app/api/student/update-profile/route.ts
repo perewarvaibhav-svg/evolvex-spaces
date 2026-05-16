@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
   }
   const userId = session.user_id;
   const body = await req.formData();
-  const fields = ['name', 'photo', 'project_name', 'one_liner', 'problem', 'project_link', 'linkedin', 'category', 'stage'];
+  const fields = ['name', 'photo', 'project_name', 'one_liner', 'problem', 'project_link', 'linkedin', 'category', 'stage', 'mobile_number', 'achievements_text', 'miscellaneous', 'college_name', 'branch', 'department'];
   const values = fields.map(f => ((body.get(f) as string) || '').trim());
   const isPublic = body.get('is_public') ? 1 : 0;
   const setClause = fields.map(f => `${f}=?`).join(', ');

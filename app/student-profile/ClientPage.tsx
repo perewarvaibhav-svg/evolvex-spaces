@@ -86,12 +86,30 @@ export default function StudentProfileClient({ user }: { user: any }) {
                   Photo URL
                   <input name="photo" defaultValue={user.photo} placeholder="https://example.com/photo.jpg" />
                 </label>
+                <label>
+                  Mobile Number
+                  <input name="mobile_number" defaultValue={user.mobile_number} placeholder="Your mobile number" />
+                </label>
+                <label>
+                  College Name
+                  <input name="college_name" defaultValue={user.college_name} placeholder="Your college" />
+                </label>
+                <label>
+                  Branch
+                  <input name="branch" defaultValue={user.branch} placeholder="Your branch" />
+                </label>
+                <label>
+                  Department
+                  <input name="department" defaultValue={user.department} placeholder="Your department" />
+                </label>
                 {/* Pass through unchanged fields */}
                 <input type="hidden" name="project_name" defaultValue={user.project_name} />
                 <input type="hidden" name="one_liner" defaultValue={user.one_liner} />
                 <input type="hidden" name="problem" defaultValue={user.problem} />
                 <input type="hidden" name="project_link" defaultValue={user.project_link} />
                 <input type="hidden" name="linkedin" defaultValue={user.linkedin} />
+                <input type="hidden" name="achievements_text" defaultValue={user.achievements_text} />
+                <input type="hidden" name="miscellaneous" defaultValue={user.miscellaneous} />
                 <input type="hidden" name="category" defaultValue={user.category} />
                 <input type="hidden" name="stage" defaultValue={user.stage} />
                 {user.is_public ? <input type="hidden" name="is_public" value="on" /> : null}
@@ -105,16 +123,24 @@ export default function StudentProfileClient({ user }: { user: any }) {
               <p className="muted" style={{ marginBottom: 24 }}>Tell the world about what you&apos;re building.</p>
               <form className="form" method="post" action="/api/student/update-profile">
                 <label>
-                  Current Focus
+                  Projects currently working on
                   <input name="project_name" defaultValue={user.project_name} placeholder="What are you currently focused on?" />
                 </label>
                 <label>
-                  Short Bio
+                  Bio
                   <input name="one_liner" defaultValue={user.one_liner} placeholder="A short bio about yourself" />
                 </label>
                 <label>
-                  Projects Worked On
-                  <textarea name="problem" defaultValue={user.problem} placeholder="List the projects you have worked on..." />
+                  Projects completed
+                  <textarea name="problem" defaultValue={user.problem} placeholder="List the projects you have completed..." />
+                </label>
+                <label>
+                  Achievements
+                  <textarea name="achievements_text" defaultValue={user.achievements_text} placeholder="List your achievements..." />
+                </label>
+                <label>
+                  Miscellaneous
+                  <textarea name="miscellaneous" defaultValue={user.miscellaneous} placeholder="Any other details..." />
                 </label>
                 <label>
                   Project Link
@@ -123,6 +149,10 @@ export default function StudentProfileClient({ user }: { user: any }) {
                 {/* Pass through unchanged fields */}
                 <input type="hidden" name="name" defaultValue={user.name} />
                 <input type="hidden" name="photo" defaultValue={user.photo} />
+                <input type="hidden" name="mobile_number" defaultValue={user.mobile_number} />
+                <input type="hidden" name="college_name" defaultValue={user.college_name} />
+                <input type="hidden" name="branch" defaultValue={user.branch} />
+                <input type="hidden" name="department" defaultValue={user.department} />
                 <input type="hidden" name="linkedin" defaultValue={user.linkedin} />
                 <input type="hidden" name="category" defaultValue={user.category} />
                 <input type="hidden" name="stage" defaultValue={user.stage} />
@@ -159,9 +189,15 @@ export default function StudentProfileClient({ user }: { user: any }) {
                 {/* Pass through unchanged fields */}
                 <input type="hidden" name="name" defaultValue={user.name} />
                 <input type="hidden" name="photo" defaultValue={user.photo} />
+                <input type="hidden" name="mobile_number" defaultValue={user.mobile_number} />
+                <input type="hidden" name="college_name" defaultValue={user.college_name} />
+                <input type="hidden" name="branch" defaultValue={user.branch} />
+                <input type="hidden" name="department" defaultValue={user.department} />
                 <input type="hidden" name="project_name" defaultValue={user.project_name} />
                 <input type="hidden" name="one_liner" defaultValue={user.one_liner} />
                 <input type="hidden" name="problem" defaultValue={user.problem} />
+                <input type="hidden" name="achievements_text" defaultValue={user.achievements_text} />
+                <input type="hidden" name="miscellaneous" defaultValue={user.miscellaneous} />
                 <input type="hidden" name="project_link" defaultValue={user.project_link} />
                 <button className="btn big">Save Settings</button>
               </form>

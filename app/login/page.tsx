@@ -9,10 +9,11 @@ export default function Login() {
             Email ID
             <input type="email" name="email" required placeholder="name@evolvex.in" />
           </label>
-          <label>
-            Password
-            <input type="password" name="password" required />
-          </label>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 4 }}>
+            <label style={{ marginBottom: 0 }}>Password</label>
+            <a href="/forgot-password" style={{ fontSize: 13, color: 'var(--primary)', fontWeight: 500 }}>Forgot password?</a>
+          </div>
+          <input type="password" name="password" required style={{ marginBottom: 16 }} />
           <button className="btn big">Log in to Dashboard</button>
         </form>
         <p className="muted" style={{ textAlign: 'center', marginTop: 16 }}>

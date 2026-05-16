@@ -10,6 +10,7 @@ export default function StudentDashboardClient({
 }: any) {
   const [activeTab, setActiveTab] = useState('activity');
   const [selectedWeek, setSelectedWeek] = useState(current_week || 1);
+  const [submitMethod, setSubmitMethod] = useState('github');
 
   return (
     <>
@@ -69,7 +70,7 @@ export default function StudentDashboardClient({
 
           <p className="muted" style={{ marginBottom: 24 }}>Submit your work via GitHub URL, Prototype link, or ZIP file upload.</p>
           
-          <div className="kanban" style={{ gridTemplateColumns: '1fr 1fr' }}>
+          <div className="kanban" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
             <div className="lane stagger-in">
               <h3>Pending Tasks</h3>
               {tasks.filter((t: any) => t.week === selectedWeek && t.status !== 'Done').length > 0 ? (
@@ -89,16 +90,7 @@ export default function StudentDashboardClient({
                     </select>
                     <textarea name="work_note" placeholder="What did you do?" defaultValue={t.work_note || ''}></textarea>
                     
-                    <div className="upload-panels" style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16, padding: '12px', background: 'var(--card-bg)', borderRadius: '8px', border: '1px solid var(--border)' }}>
-                      <label style={{ fontSize: 13, fontWeight: 600 }}>GitHub URL</label>
-                      <input name="github_url" type="url" placeholder="https://github.com/..." defaultValue={t.proof_link?.includes('github.com') ? t.proof_link : ''} style={{ margin: 0, padding: '8px' }} />
-                      
-                      <label style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>Prototype Link</label>
-                      <input name="prototype_url" type="url" placeholder="Figma, Vercel, Live App..." defaultValue={(!t.proof_link?.includes('github.com') && !t.proof_link?.includes('.zip') && t.proof_link) ? t.proof_link : ''} style={{ margin: 0, padding: '8px' }} />
-
-                      <label style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>ZIP File Upload</label>
-                      <input name="file_upload" type="file" accept=".zip" style={{ margin: 0, padding: '8px', background: 'var(--bg)', borderRadius: '4px' }} />
-                    </div>
+                    <input name="proof_link" type="url" placeholder="Proof link (optional)" defaultValue={t.proof_link || ''} style={{ marginBottom: 16 }} />
 
                     <button className="btn">Submit Work</button>
                   </form>
@@ -121,16 +113,7 @@ export default function StudentDashboardClient({
                     <p className="due" style={{ color: 'var(--success)' }}>Submitted on {t.submitted_at?.slice(0, 10)}</p>
                     <textarea name="work_note" placeholder="What did you do?" defaultValue={t.work_note || ''}></textarea>
                     
-                    <div className="upload-panels" style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16, padding: '12px', background: 'var(--card-bg)', borderRadius: '8px', border: '1px solid var(--border)' }}>
-                      <label style={{ fontSize: 13, fontWeight: 600 }}>GitHub URL</label>
-                      <input name="github_url" type="url" placeholder="https://github.com/..." defaultValue={t.proof_link?.includes('github.com') ? t.proof_link : ''} style={{ margin: 0, padding: '8px' }} />
-                      
-                      <label style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>Prototype Link</label>
-                      <input name="prototype_url" type="url" placeholder="Figma, Vercel, Live App..." defaultValue={(!t.proof_link?.includes('github.com') && !t.proof_link?.includes('.zip') && t.proof_link) ? t.proof_link : ''} style={{ margin: 0, padding: '8px' }} />
-
-                      <label style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>ZIP File Upload</label>
-                      <input name="file_upload" type="file" accept=".zip" style={{ margin: 0, padding: '8px', background: 'var(--bg)', borderRadius: '4px' }} />
-                    </div>
+                    <input name="proof_link" type="url" placeholder="Proof link (optional)" defaultValue={t.proof_link || ''} style={{ marginBottom: 16 }} />
 
                     <input type="hidden" name="status" value="Done" />
                     <button className="btn ghost small" style={{ marginTop: 8 }}>Update Submission</button>
@@ -139,6 +122,58 @@ export default function StudentDashboardClient({
               ) : (
                 <p className="muted">No completed tasks for Week {selectedWeek}.</p>
               )}
+            </div>
+
+            <div className="lane stagger-in">
+              <h3>General Submission</h3>
+              <form className="task-card" method="post" action="#" encType="multipart/form-data">
+                <p className="muted" style={{ marginBottom: 16 }}>Submit your work independent of tasks here.</p>
+                
+                <div style={{ display: 'flex', gap: 16, marginBottom: 16 }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer' }}><input type="radio" name="submit_method" value="github" checked={submitMethod === 'github'} onChange={(e) => setSubmitMethod(e.target.value)} /> GitHub</label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer' }}><input type="radio" name="submit_method" value="prototype" checked={submitMethod === 'prototype'} onChange={(e) => setSubmitMethod(e.target.value)} /> Prototype</label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer' }}><input type="radio" name="submit_method" value="zip" checked={submitMethod === 'zip'} onChange={(e) => setSubmitMethod(e.target.value)} /> ZIP</label>
+                </div>
+
+                <div className="upload-panels" style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
+                  {submitMethod === 'github' && (
+                    <div style={{ padding: '12px', background: 'var(--surface-sunken)', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                      <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 8 }}>GitHub URL</label>
+                      <input name="github_url" type="url" placeholder="https://github.com/..." style={{ margin: 0, padding: '8px', width: '100%' }} />
+                    </div>
+                  )}
+                  
+                  {submitMethod === 'prototype' && (
+                    <div style={{ padding: '12px', background: 'var(--surface-sunken)', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                      <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 8 }}>Prototype Link</label>
+                      <input name="prototype_url" type="url" placeholder="Figma, Vercel, Live App..." style={{ margin: 0, padding: '8px', width: '100%' }} />
+                    </div>
+                  )}
+
+                  {submitMethod === 'zip' && (
+                    <div style={{ padding: '12px', background: 'var(--surface-sunken)', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                      <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 8 }}>ZIP File Upload</label>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <button type="button" onClick={(e) => {
+                          const fileInput = (e.currentTarget.nextElementSibling as HTMLInputElement);
+                          if (fileInput) fileInput.click();
+                        }} className="btn ghost" style={{ fontSize: 20, padding: '4px 16px', borderRadius: 8 }}>+</button>
+                        <input name="file_upload" type="file" accept=".zip" style={{ display: 'none' }} onChange={(e) => {
+                          const btn = (e.currentTarget.previousElementSibling as HTMLButtonElement);
+                          const file = e.currentTarget.files?.[0];
+                          if (btn && file) {
+                            btn.textContent = '✓ ' + file.name;
+                            btn.style.fontSize = '14px';
+                          }
+                        }} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <textarea name="work_note" placeholder="Any details..." style={{ marginBottom: 16 }}></textarea>
+                <button type="submit" className="btn">Submit General Work</button>
+              </form>
             </div>
           </div>
         </section>

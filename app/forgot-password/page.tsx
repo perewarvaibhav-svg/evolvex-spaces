@@ -1,48 +1,38 @@
-import { getSession } from '@/lib/session';
-import { redirect } from 'next/navigation';
-import Navbar from '@/components/Navbar';
+'use client';
+import { useState } from 'react';
+import Link from 'next/link';
 
-export const metadata = { title: 'Forgot Password | EvolveX' };
-
-export default async function ForgotPasswordPage({ searchParams }: { searchParams: { sent?: string; error?: string } }) {
-  const session = await getSession();
-  if (session.user_id) redirect('/dashboard');
+export default function ForgotPassword() {
+  const [submitted, setSubmitted] = useState(false);
 
   return (
-    <>
-      <Navbar session={session as any} />
-      <main>
-        <section className="auth">
-          <p className="eyebrow">Account Recovery</p>
-          <h1 style={{ fontSize: 40 }}>Forgot Password</h1>
-          <p className="muted" style={{ marginBottom: 32 }}>
-            Enter your email and we&apos;ll send you a link to reset your password.
-          </p>
+    <div className="auth">
+      <div className="card">
+        <h2>Reset Password</h2>
+        <p className="muted" style={{ marginBottom: 24 }}>
+          {submitted 
+            ? "If an account with that email exists, we've sent instructions to reset your password."
+            : "Enter your email address and we'll send you a link to reset your password."}
+        </p>
 
-          {searchParams.sent && (
-            <div className="flash success" style={{ marginBottom: 24 }}>
-              ✅ If that email exists, a reset link has been sent. Check your inbox.
-            </div>
-          )}
-          {searchParams.error && (
-            <div className="flash danger" style={{ marginBottom: 24 }}>
-              ❌ {searchParams.error}
-            </div>
-          )}
-
-          <form className="form card" method="post" action="/api/auth/forgot-password">
+        {!submitted ? (
+          <form className="form" onSubmit={(e) => { e.preventDefault(); setSubmitted(true); }}>
             <label>
               Email Address
-              <input name="email" type="email" required placeholder="you@example.com" autoFocus />
+              <input type="email" required placeholder="name@evolvex.in" />
             </label>
-            <button className="btn big">Send Reset Link</button>
+            <button type="submit" className="btn big">Send Reset Link</button>
           </form>
-
-          <p style={{ marginTop: 24, textAlign: 'center' }}>
-            <a href="/login" style={{ color: 'rgba(255,255,255,0.7)' }}>← Back to Login</a>
-          </p>
-        </section>
-      </main>
-    </>
+        ) : (
+          <Link href="/login" className="btn big" style={{ display: 'block', textAlign: 'center' }}>
+            Return to Login
+          </Link>
+        )}
+        
+        <p className="muted" style={{ textAlign: 'center', marginTop: 16 }}>
+          Remember your password? <Link href="/login" style={{ color: 'var(--primary)', fontWeight: 600 }}>Log in</Link>
+        </p>
+      </div>
+    </div>
   );
 }

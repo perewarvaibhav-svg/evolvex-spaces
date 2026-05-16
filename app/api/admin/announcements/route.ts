@@ -31,6 +31,13 @@ export async function POST(req: NextRequest) {
   try {
     await execute('INSERT INTO announcements(title,body,priority,author_id,created_at,expires_at) VALUES(?,?,?,?,?,?)',
       [title, message, priority, session.user_id, nowIso(), expires_at]);
+      
+    // Send email blast
+    await blastEmail(
+      `New EvolveX Announcement: ${title}`,
+      `A new announcement has been posted to your dashboard:\n\n"${title}"\n\n${message}\n\nPlease check your EvolveX dashboard for details.`
+    );
+    
     session.flash = [{ cat: 'success', msg: 'Announcement posted to all students.' }];
   } catch (e) {
     session.flash = [{ cat: 'error', msg: 'Error posting announcement.' }];
