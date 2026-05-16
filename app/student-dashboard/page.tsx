@@ -12,6 +12,10 @@ export default async function StudentDashboard() {
   
   const userId = session.user_id;
   const user = await getUser(userId);
+  if (!user) {
+    session.destroy();
+    redirect('/login');
+  }
   const tasks = await query(
     `SELECT t.*, COALESCE(s.status,'Not Started') status, s.work_note, s.proof_link, s.submitted_at, s.points_awarded FROM tasks t LEFT JOIN submissions s ON s.task_id=t.id AND s.user_id=? ORDER BY t.due_date, t.id`,
     [userId]

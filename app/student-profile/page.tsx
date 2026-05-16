@@ -9,5 +9,9 @@ export default async function StudentProfilePage() {
     redirect('/login');
   }
   const user = await getUser(session.user_id);
+  if (!user) {
+    session.destroy();
+    redirect('/login');
+  }
   return <StudentProfileClient user={user} />;
 }
