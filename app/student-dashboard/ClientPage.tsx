@@ -67,14 +67,14 @@ export default function StudentDashboardClient({
             })}
           </div>
 
-          <p className="muted" style={{ marginBottom: 24 }}>Submit your work via GitHub URL, Prototype link, or Google Drive file link.</p>
+          <p className="muted" style={{ marginBottom: 24 }}>Submit your work via GitHub URL, Prototype link, or ZIP file upload.</p>
           
           <div className="kanban" style={{ gridTemplateColumns: '1fr 1fr' }}>
             <div className="lane stagger-in">
               <h3>Pending Tasks</h3>
               {tasks.filter((t: any) => t.week === selectedWeek && t.status !== 'Done').length > 0 ? (
                 tasks.filter((t: any) => t.week === selectedWeek && t.status !== 'Done').map((t: any) => (
-                  <form key={t.id} className="task-card" method="post" action={`/api/student/task/${t.id}/status`}>
+                  <form key={t.id} className="task-card" method="post" action={`/api/student/task/${t.id}/status`} encType="multipart/form-data">
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <span className="pill" style={{ marginBottom: 8 }}>Week {t.week}</span>
                       <span className="points">{t.points} pts</span>
@@ -88,7 +88,18 @@ export default function StudentDashboardClient({
                       <option value="Done">Mark as Done</option>
                     </select>
                     <textarea name="work_note" placeholder="What did you do?" defaultValue={t.work_note || ''}></textarea>
-                    <input name="proof_link" type="url" placeholder="GitHub, Figma, or Drive URL" defaultValue={t.proof_link || ''} />
+                    
+                    <div className="upload-panels" style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16, padding: '12px', background: 'var(--card-bg)', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                      <label style={{ fontSize: 13, fontWeight: 600 }}>GitHub URL</label>
+                      <input name="github_url" type="url" placeholder="https://github.com/..." defaultValue={t.proof_link?.includes('github.com') ? t.proof_link : ''} style={{ margin: 0, padding: '8px' }} />
+                      
+                      <label style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>Prototype Link</label>
+                      <input name="prototype_url" type="url" placeholder="Figma, Vercel, Live App..." defaultValue={(!t.proof_link?.includes('github.com') && !t.proof_link?.includes('.zip') && t.proof_link) ? t.proof_link : ''} style={{ margin: 0, padding: '8px' }} />
+
+                      <label style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>ZIP File Upload</label>
+                      <input name="file_upload" type="file" accept=".zip" style={{ margin: 0, padding: '8px', background: 'var(--bg)', borderRadius: '4px' }} />
+                    </div>
+
                     <button className="btn">Submit Work</button>
                   </form>
                 ))
@@ -101,7 +112,7 @@ export default function StudentDashboardClient({
               <h3>Completed Tasks</h3>
               {tasks.filter((t: any) => t.week === selectedWeek && t.status === 'Done').length > 0 ? (
                 tasks.filter((t: any) => t.week === selectedWeek && t.status === 'Done').map((t: any) => (
-                  <form key={t.id} className="task-card" method="post" action={`/api/student/task/${t.id}/status`}>
+                  <form key={t.id} className="task-card" method="post" action={`/api/student/task/${t.id}/status`} encType="multipart/form-data">
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <span className="pill" style={{ marginBottom: 8 }}>Week {t.week}</span>
                       <span className="points" style={{ color: 'var(--success)' }}>{t.points_awarded ?? t.points} pts Earned</span>
@@ -109,7 +120,18 @@ export default function StudentDashboardClient({
                     <h4>{t.title}</h4>
                     <p className="due" style={{ color: 'var(--success)' }}>Submitted on {t.submitted_at?.slice(0, 10)}</p>
                     <textarea name="work_note" placeholder="What did you do?" defaultValue={t.work_note || ''}></textarea>
-                    <input name="proof_link" type="url" placeholder="GitHub, Figma, or Drive URL" defaultValue={t.proof_link || ''} />
+                    
+                    <div className="upload-panels" style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16, padding: '12px', background: 'var(--card-bg)', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                      <label style={{ fontSize: 13, fontWeight: 600 }}>GitHub URL</label>
+                      <input name="github_url" type="url" placeholder="https://github.com/..." defaultValue={t.proof_link?.includes('github.com') ? t.proof_link : ''} style={{ margin: 0, padding: '8px' }} />
+                      
+                      <label style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>Prototype Link</label>
+                      <input name="prototype_url" type="url" placeholder="Figma, Vercel, Live App..." defaultValue={(!t.proof_link?.includes('github.com') && !t.proof_link?.includes('.zip') && t.proof_link) ? t.proof_link : ''} style={{ margin: 0, padding: '8px' }} />
+
+                      <label style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>ZIP File Upload</label>
+                      <input name="file_upload" type="file" accept=".zip" style={{ margin: 0, padding: '8px', background: 'var(--bg)', borderRadius: '4px' }} />
+                    </div>
+
                     <input type="hidden" name="status" value="Done" />
                     <button className="btn ghost small" style={{ marginTop: 8 }}>Update Submission</button>
                   </form>

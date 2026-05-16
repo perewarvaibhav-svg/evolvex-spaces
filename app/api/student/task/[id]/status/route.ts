@@ -16,7 +16,18 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const body = await req.formData();
   const status = (body.get('status') as string) || 'Not Started';
   const note = ((body.get('work_note') as string) || '').trim();
-  const link = ((body.get('proof_link') as string) || '').trim();
+  
+  const github = ((body.get('github_url') as string) || '').trim();
+  const prototype = ((body.get('prototype_url') as string) || '').trim();
+  const file = body.get('file_upload') as File | null;
+  
+  let link = '';
+  if (github) link += github + ' ';
+  if (prototype) link += prototype + ' ';
+  if (file && file.size > 0) {
+    link += `[Attached: ${file.name}]`;
+  }
+  link = link.trim();
   
   const task: any = await query('SELECT * FROM tasks WHERE id=?', [taskId], true);
   const existing: any = await query('SELECT * FROM submissions WHERE user_id=? AND task_id=?', [userId, taskId], true);

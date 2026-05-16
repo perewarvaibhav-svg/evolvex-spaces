@@ -105,16 +105,16 @@ export default function StudentProfileClient({ user }: { user: any }) {
               <p className="muted" style={{ marginBottom: 24 }}>Tell the world about what you&apos;re building.</p>
               <form className="form" method="post" action="/api/student/update-profile">
                 <label>
-                  Project Name
-                  <input name="project_name" defaultValue={user.project_name} placeholder="My Startup Name" />
+                  Current Focus
+                  <input name="project_name" defaultValue={user.project_name} placeholder="What are you currently focused on?" />
                 </label>
                 <label>
-                  One-liner
-                  <input name="one_liner" defaultValue={user.one_liner} placeholder="Describe your project in one sentence" />
+                  Short Bio
+                  <input name="one_liner" defaultValue={user.one_liner} placeholder="A short bio about yourself" />
                 </label>
                 <label>
-                  Problem
-                  <textarea name="problem" defaultValue={user.problem} placeholder="What problem does your project solve?" />
+                  Projects Worked On
+                  <textarea name="problem" defaultValue={user.problem} placeholder="List the projects you have worked on..." />
                 </label>
                 <label>
                   Project Link

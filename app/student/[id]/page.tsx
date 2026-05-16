@@ -14,24 +14,24 @@ export default async function StudentProfile({ params }: { params: Promise<{ id:
 
   return (
     <>
-      <section className="profile-hero reveal-up">
+      <section className="profile-hero reveal-up" style={{ textAlign: 'center', padding: '40px 20px' }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={student.photo} alt={student.name} />
+        <img src={student.photo} alt={student.name} style={{ width: 120, height: 120, borderRadius: '50%', objectFit: 'cover', margin: '0 auto 20px', display: 'block' }} />
         <div>
-          <h1>{student.name}</h1>
+          <h1 style={{ fontSize: 28, marginBottom: 4 }}>{student.name}</h1>
           <p className="muted">{student.email}</p>
         </div>
       </section>
 
-      {student.is_public === 1 && student.project_name ? (
+      {student.is_public === 1 ? (
         <section className="two-col profile-content reveal-up">
           <div className="card stagger-in" style={{ padding: 48 }}>
             <span className="tag">{student.category}</span>
-            <h2 style={{ fontSize: 32, marginTop: 16 }}>{student.project_name}</h2>
-            <p className="eyebrow" style={{ marginTop: 8 }}>{student.one_liner}</p>
+            <h2 style={{ fontSize: 24, marginTop: 16 }}>{student.project_name || 'Exploring Ideas'}</h2>
+            <p className="eyebrow" style={{ marginTop: 8 }}>{student.one_liner || 'No bio provided.'}</p>
             
-            <h3 style={{ marginTop: 40, fontSize: 16, color: 'var(--ink-secondary)' }}>Problem being solved</h3>
-            <p style={{ marginTop: 8, whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>{student.problem || 'Not defined yet.'}</p>
+            <h3 style={{ marginTop: 40, fontSize: 16, color: 'var(--ink-secondary)' }}>Projects Worked On</h3>
+            <p style={{ marginTop: 8, whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>{student.problem || 'No projects listed yet.'}</p>
             
             <div style={{ marginTop: 40, display: 'flex', gap: 16 }}>
               {student.project_link && <Link href={student.project_link} target="_blank" className="btn">Visit Project</Link>}
