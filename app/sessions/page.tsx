@@ -1,17 +1,12 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { query } from '@/lib/db';
 
-const SESSIONS_DATA = [
-  { title: 'The Beginning', date: '21 March', speaker: 'Karthik Nagapuri', linkedin: 'https://www.linkedin.com/in/karthiknagpuri/', image: 'session1.jpg', tag: 'Introductions & Goals', description: 'Our journey started with introductions, goals, startup ideas, and the first spark of turning thoughts into real systems.' },
-  { title: 'AI Foundations', date: '31 March', speaker: 'Meet Desai', linkedin: 'https://www.linkedin.com/in/meetdesai13?utm_source=share_via&utm_content=profile&utm_medium=member_android', image: 'session2.jpg', tag: 'AI & Emerging Tech', description: 'An interactive session where we explored the fundamentals of AI development and future technologies shaping the industry.' },
-  { title: 'Design Thinking', date: '7 April', speaker: 'Sai Santhosh Madhari', linkedin: 'https://www.linkedin.com/in/saisantoshmadhari0711?utm_source=share_via&utm_content=profile&utm_medium=member_android', image: 'session3.jpg', tag: 'Design & Creativity', description: 'A session that helped us understand design, its types, and how good design makes ideas more meaningful.' },
-  { title: 'Agentic AI & Tools', date: '8 April', speaker: 'Konrad Gnat', linkedin: 'https://www.linkedin.com/in/konrad-gnat?utm_source=share_via&utm_content=profile&utm_medium=member_android', image: 'session4.jpg', tag: 'Agentic AI', description: 'We explored Agentic AI, AI tools, and modern tech for web development.' },
-  { title: 'Entrepreneurship Reality Check', date: '12 April', speaker: 'Deepak Rai', linkedin: 'https://www.linkedin.com/in/deepakrai9?utm_source=share_via&utm_content=profile&utm_medium=member_android', image: 'session5.jpg', tag: 'Startup Challenges', description: 'A practical session on entrepreneurship, challenges founders face, and how to overcome them.' },
-  { title: 'Content Creation Mindset', date: '12 April', speaker: 'Shivam Rai Sir', linkedin: 'https://www.linkedin.com/in/1809shivamrai?utm_source=share_via&utm_content=profile&utm_medium=member_android', image: 'session6.jpg', tag: 'Brand & Content', description: 'A lively session on getting started with content creation, thinking uniquely, and building a strong personal brand.' },
-  { title: 'Frontend, Backend & AI Tools', date: '24 April', speaker: 'Anand Reddy K S', linkedin: 'https://www.linkedin.com/in/anandreddyks?utm_source=share_via&utm_content=profile&utm_medium=member_android', image: 'session7.jpg', tag: 'Tech Implementation', description: 'We understood frontend, backend, SQL, NoSQL, AI tools, and how to build impactful projects by solving real user problems.' },
-];
+export const dynamic = 'force-dynamic';
 
-export default function Sessions() {
+export default async function Sessions() {
+  const sessions = await query('SELECT * FROM sessions_data ORDER BY event_date ASC') as any[];
+
   return (
     <>
       <div className="journey-hero reveal-up">
@@ -19,34 +14,42 @@ export default function Sessions() {
         <h1>Every session shapes the founder.</h1>
       </div>
 
-      <div className="journey-tabs reveal-up">
-        {SESSIONS_DATA.map((s, i) => (
-          <div key={i} className="journey-tab">{s.tag}</div>
-        ))}
-      </div>
+      {sessions.length > 0 && (
+        <div className="journey-tabs reveal-up">
+          {sessions.map((s, i) => (
+            <div key={i} className="journey-tab">{s.event_type}</div>
+          ))}
+        </div>
+      )}
 
       <div className="journey-timeline">
-        {SESSIONS_DATA.map((s, i) => (
+        {sessions.length > 0 ? sessions.map((s, i) => (
           <div key={i} className="session-card stagger-in">
             <div className="session-image-box">
-              <Image 
-                src={`/static/images/sessions/${s.image}`} 
-                alt={s.title} 
-                fill 
-                style={{ objectFit: 'cover' }}
-                sizes="(max-width: 768px) 100vw, 50vw"
-              />
-              <div className="session-tag">{s.tag}</div>
+              {s.photo_url ? (
+                <Image 
+                  src={s.photo_url} 
+                  alt={s.title} 
+                  fill 
+                  style={{ objectFit: 'cover' }}
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                />
+              ) : (
+                <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #1f1f2e, #3a3a52)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '24px', fontWeight: 'bold' }}>
+                  {s.title.charAt(0)}
+                </div>
+              )}
+              <div className="session-tag">{s.event_type}</div>
             </div>
             <div className="session-content">
-              <span className="session-date">{s.date}</span>
+              <span className="session-date">{new Date(s.event_date).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
               <h2>{s.title}</h2>
               <p>{s.description}</p>
               
               <div className="speaker-box">
                 <div>
                   <small>Speaker / Guide</small>
-                  <h3>{s.speaker}</h3>
+                  <h3>{s.speaker || 'TBA'}</h3>
                 </div>
                 {s.linkedin && (
                   <Link href={s.linkedin} target="_blank" className="linkedin-btn">
@@ -56,8 +59,11 @@ export default function Sessions() {
               </div>
             </div>
           </div>
-        ))}
+        )) : (
+          <p className="muted" style={{ textAlign: 'center', width: '100%', padding: '40px 0' }}>No sessions have been added yet.</p>
+        )}
       </div>
     </>
   );
 }
+

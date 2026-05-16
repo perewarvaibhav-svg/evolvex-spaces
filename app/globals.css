@@ -68,21 +68,63 @@ body {
   line-height: 1.6;
 }
 
-/* Typography Overrides */
+/* =======================================================
+   TEXT COLOR SYSTEM
+   Rule: page bg is dark aurora → all text WHITE by default.
+   White glass panels → override to BLACK.
+   Dark panels → keep WHITE.
+======================================================= */
+
+/* --- PAGE LEVEL (dark aurora background): WHITE text --- */
 h1, h2, h3, h4 {
   font-family: 'Instrument Serif', serif;
   font-weight: 400;
   letter-spacing: -0.02em;
-  color: inherit;
+  color: #ffffff;
   margin: 0 0 16px;
   line-height: 1.1;
 }
-
 h3, h4 {
   font-family: 'Manrope', sans-serif;
   font-weight: 700;
   letter-spacing: -0.01em;
 }
+p { color: rgba(255, 255, 255, 0.88); }
+
+/* --- WHITE GLASS PANELS: BLACK text --- */
+/* Covers: .card, .stat, .hero-card, .spotlight-card,
+           .win-card-v2, .timeline-card-v2, .task-card,
+           .profile, .table-wrap, .nav, .lane */
+.card, .stat, .hero-card, .project-card, .project-card-v2,
+.spotlight-card, .win-card-v2, .timeline-card-v2,
+.task-card, .profile, .table-wrap, .nav {
+  --panel-text: #000000;
+  --panel-muted: #444444;
+  color: var(--panel-text);
+}
+/* All children inside white panels inherit dark text */
+.card *, .stat *, .hero-card *, .project-card *, .project-card-v2 *,
+.spotlight-card *, .win-card-v2 *, .timeline-card-v2 *,
+.task-card *, .profile *, .table-wrap *, .nav * {
+  color: inherit;
+}
+/* Specific overrides so sub-elements use right shade */
+.card h1, .card h2, .card h3, .card h4,
+.stat h1, .stat h2, .stat h3, .stat h4,
+.task-card h3, .task-card h4,
+.profile h1, .profile h2, .profile h3,
+.table-wrap h1, .table-wrap h2, .table-wrap h3 { color: #000000 !important; }
+.card p, .stat p, .task-card p,
+.profile p, .table-wrap p { color: #444444 !important; }
+.card .muted, .task-card .muted, .profile .muted,
+.table-wrap .muted { color: #555555 !important; }
+.card label, .task-card label { color: #000000 !important; }
+.card .eyebrow, .stat .eyebrow, .task-card .eyebrow { color: #666666 !important; }
+
+/* --- DARK PANELS (speaker-box, session-card, journey entries, podium, etc.): WHITE text --- */
+.speaker-box, .session-card, .bg-dark { color: #ffffff; }
+.speaker-box * { color: #ffffff; }
+.speaker-box p, .speaker-box small { color: rgba(255,255,255,0.75) !important; }
 
 a { color: inherit; text-decoration: none; transition: var(--transition); }
 img { max-width: 100%; border-radius: var(--radius-lg); }
@@ -138,8 +180,10 @@ main {
   font-family: 'Manrope', sans-serif;
   font-weight: 600;
   font-size: 15px;
+  color: var(--ink-primary);
 }
 
+.nav-link { color: var(--ink-primary); }
 .nav-link:hover { color: var(--ink-secondary); }
 
 /* Buttons - Exact Markcon Black Pill */
@@ -166,13 +210,22 @@ main {
 }
 
 .btn.ghost {
-  background: transparent;
-  color: var(--ink-primary);
-  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.12);
+  color: #ffffff;
+  border: 1px solid rgba(255,255,255,0.3);
 }
 .btn.ghost:hover {
-  background: var(--bg-secondary);
+  background: rgba(255,255,255,0.22);
   box-shadow: none;
+}
+/* Ghost button inside white glass card goes dark */
+.card .btn.ghost, .stat .btn.ghost, .nav .btn.ghost {
+  background: transparent;
+  color: var(--ink-primary);
+  border: 1px solid rgba(0,0,0,0.2);
+}
+.card .btn.ghost:hover, .stat .btn.ghost:hover, .nav .btn.ghost:hover {
+  background: rgba(0,0,0,0.05);
 }
 .btn.big { padding: 18px 36px; font-size: 16px; }
 .btn.small { padding: 10px 20px; font-size: 14px; }
@@ -182,13 +235,12 @@ main {
 .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
 .grid-2, .two-col { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
 
-/* Cards - Exact Markcon Soft Shadow & 24px Radius + Aurora Glass */
+/* Cards - Glass Aurora */
 .card, .stat, .hero-card, .project-card, .project-card-v2, .spotlight-card, .win-card-v2, .timeline-card-v2 {
   background: var(--card);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  color: var(--ink-primary) !important;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(255,255,255,0.25);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
   transition: var(--transition);
@@ -202,7 +254,10 @@ main {
 .card { padding: 40px; margin: 32px 0; }
 .stat, .spotlight-card, .win-card-v2, .hero-card, .timeline-card-v2 { padding: 40px; }
 .stat b { font-family: 'Instrument Serif', serif; font-size: 56px; display: block; font-weight: 400; margin-bottom: 4px; }
-.stat span, .muted { color: var(--ink-secondary); font-family: 'Manrope', sans-serif; font-size: 16px; font-weight: 500; }
+/* Stat labels inside glass panels: dark */
+.stat span { color: #555555; font-family: 'Manrope', sans-serif; font-size: 16px; font-weight: 500; }
+/* .muted on page bg: white-ish; overridden inside panels above */
+.muted { color: rgba(255, 255, 255, 0.75); font-family: 'Manrope', sans-serif; font-size: 16px; font-weight: 500; }
 
 /* Student Spotlight / Win Cards (Markcon style floating panels) */
 .student-row {
@@ -253,42 +308,47 @@ main {
   font-family: 'Manrope', sans-serif;
   font-size: 12px;
   font-weight: 700;
-  color: var(--ink-secondary);
+  color: rgba(255, 255, 255, 0.6);
   margin-bottom: 16px;
   display: block;
 }
+/* Eyebrow inside glass cards stays dark */
+.card .eyebrow, .stat .eyebrow { color: var(--ink-secondary); }
 
 /* Badges & Tags - Monochrome/Neutral Pills */
 .pill, .tag, .badge, .week-badge {
   display: inline-flex;
   padding: 8px 16px;
   border-radius: var(--radius-pill);
-  background: #F1F5F9;
-  color: inherit;
+  background: rgba(255,255,255,0.15);
+  color: #ffffff;
   font-weight: 600;
   font-size: 13px;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(255,255,255,0.25);
 }
-.tag { background: #FFFFFF; }
+/* Pills inside white glass cards go dark */
+.card .pill, .card .tag, .card .badge, .table-wrap .pill, .table-wrap .tag { background: #F1F5F9; color: var(--ink-primary); border-color: rgba(0,0,0,0.1); }
+.tag { background: rgba(255,255,255,0.2); }
 .badge { margin: 4px; }
 
 /* Tables */
 .table-wrap { overflow: auto; border-radius: var(--radius-lg); background: var(--card); border: 1px solid var(--line); box-shadow: var(--shadow-card); }
 table { border-collapse: collapse; width: 100%; min-width: 800px; }
-th, td { text-align: left; padding: 24px; border-bottom: 1px solid var(--line); vertical-align: middle; font-family: 'Manrope', sans-serif; }
+th, td { text-align: left; padding: 24px; border-bottom: 1px solid rgba(0,0,0,0.08); vertical-align: middle; font-family: 'Manrope', sans-serif; color: var(--ink-primary); }
 th { font-size: 13px; font-weight: 600; color: var(--ink-secondary); background: rgba(0,0,0,0.05); }
 .click-row { cursor: pointer; transition: var(--transition); }
-.click-row:hover { background: var(--bg-secondary); }
+.click-row:hover { background: rgba(0,0,0,0.03); }
 .featured-row { background: #FAFAFA; border-left: 4px solid var(--ink-primary); }
 
-/* Forms */
+/* Forms - labels on dark bg (auth page) need white, labels inside cards already overridden above */
 .auth { max-width: 480px; margin: 100px auto; }
 .form, .mini-form { display: grid; gap: 24px; }
-.form label, .mini-form label { font-family: 'Manrope', sans-serif; font-weight: 600; font-size: 14px; display: block; }
+/* Default label color: white for open-page forms; dark inside cards via earlier override */
+.form label, .mini-form label { font-family: 'Manrope', sans-serif; font-weight: 600; font-size: 14px; display: block; color: #ffffff; }
 input, textarea, select {
   width: 100%;
   border: 1px solid rgba(0,0,0,0.15);
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.85);
   color: var(--ink-primary);
   border-radius: var(--radius-md);
   padding: 16px;
@@ -314,15 +374,17 @@ textarea { min-height: 120px; resize: vertical; }
 
 /* Tabs & Kanban */
 .tabs { padding: 0; overflow: hidden; background: transparent; border: none; box-shadow: none; }
+/* Tab buttons: dark frosted glass pill so white text reads clearly */
 .tab-buttons {
   display: flex;
   gap: 8px;
   padding: 8px;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-radius: var(--radius-pill);
   margin-bottom: 40px;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(255,255,255,0.15);
   width: fit-content;
 }
 .tab-btn {
@@ -333,12 +395,12 @@ textarea { min-height: 120px; resize: vertical; }
   font-family: 'Manrope', sans-serif;
   font-weight: 600;
   font-size: 15px;
-  color: var(--ink-secondary);
+  color: rgba(255,255,255,0.65);
   cursor: pointer;
   transition: var(--transition);
 }
-.tab-btn:hover { color: var(--ink-primary); }
-.tab-btn.active { background: var(--ink-primary); color: var(--ink-light); }
+.tab-btn:hover { color: #ffffff; background: rgba(255,255,255,0.1); }
+.tab-btn.active { background: #ffffff; color: #000000; }
 .tab { display: none; padding: 0; }
 .tab.active { display: block; animation: fadeUp 0.4s ease forwards; }
 
@@ -356,14 +418,17 @@ textarea { min-height: 120px; resize: vertical; }
   -webkit-overflow-scrolling: touch; 
 }
 .lane { 
-  background: rgba(0,0,0,0.03); 
+  background: rgba(0,0,0,0.04); 
   border-radius: var(--radius-lg); 
   padding: 24px; 
   min-height: 400px; 
-  border: 1px solid var(--line); 
+  border: 1px solid rgba(0,0,0,0.08); 
   min-width: 320px; 
-  flex: 0 0 auto; 
+  flex: 0 0 auto;
+  color: #000000;
 }
+.lane h3, .lane h4 { color: #000000 !important; }
+.lane .muted { color: #555555 !important; }
 .layout-split {
   display: grid;
   grid-template-columns: 1.8fr 1fr;
@@ -380,46 +445,57 @@ textarea { min-height: 120px; resize: vertical; }
 }
 
 .task-card {
-  background: var(--bg-primary);
-  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0,0,0,0.08);
   border-radius: var(--radius-md);
   padding: 24px;
   margin: 16px 0;
+  color: var(--ink-primary);
   box-shadow: var(--shadow-card);
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform, box-shadow;
 }
+.task-card h4, .task-card h3 { color: var(--ink-primary); }
+.task-card p { color: var(--ink-secondary); }
 .task-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); }
-.points { float: right; font-weight: 700; color: var(--ink-primary); background: rgba(0,0,0,0.05); padding: 6px 14px; border-radius: var(--radius-pill); font-size: 13px; }
+.points { float: right; font-weight: 700; color: var(--ink-primary); background: rgba(0,0,0,0.07); padding: 6px 14px; border-radius: var(--radius-pill); font-size: 13px; }
 
 /* Journey & Profiles */
-.profile { display: flex; gap: 40px; align-items: center; padding: 48px; background: var(--bg-primary); border-radius: var(--radius-lg); border: 1px solid var(--line); }
+.profile { display: flex; gap: 40px; align-items: center; padding: 48px; background: rgba(255,255,255,0.88); backdrop-filter: blur(20px); color: var(--ink-primary); border-radius: var(--radius-lg); border: 1px solid rgba(0,0,0,0.08); }
 .profile img { width: 160px; height: 160px; border-radius: var(--radius-lg); object-fit: cover; }
 .journey { display: grid; gap: 24px; margin-top: 24px; }
 .journey > div {
-  border-left: 2px solid var(--ink-primary);
-  background: var(--bg-primary);
+  border-left: 2px solid rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.07);
   padding: 32px;
   border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(255,255,255,0.12);
   border-left: none;
+  color: #ffffff;
 }
+.journey > div b { color: #ffffff; }
+.journey > div span { color: rgba(255,255,255,0.6); font-size: 13px; }
+.journey > div p { color: rgba(255,255,255,0.82) !important; }
 
 /* Leaderboard Specific */
 .leader-hero { display: grid; grid-template-columns: 1fr 320px; gap: 40px; align-items: center; margin: 80px 0 60px; }
 .leader-hero h1 { font-size: clamp(64px, 8vw, 96px); line-height: 0.9; }
 .leader-mini {
   border-radius: var(--radius-lg);
-  background: rgba(255,255,255,0.7);
-  border: 1px solid var(--line);
-  color: inherit;
+  background: rgba(255,255,255,0.88);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: #000000;
   display: grid;
   place-items: center;
   padding: 48px;
 }
-.leader-mini b { font-family: 'Instrument Serif', serif; font-size: 96px; line-height: 1; font-weight: 400; }
+.leader-mini b { font-family: 'Instrument Serif', serif; font-size: 96px; line-height: 1; font-weight: 400; color: #000000; }
 .podium { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin: 40px 0 60px; }
-.podium-card { position: relative; padding: 40px; border-radius: var(--radius-lg); background: var(--bg-primary); border: 1px solid var(--line); box-shadow: var(--shadow-card); text-align: center; }
+.podium-card { position: relative; padding: 40px; border-radius: var(--radius-lg); background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); box-shadow: var(--shadow-card); text-align: center; color: #ffffff; }
+.podium-card h2, .podium-card h3, .podium-card p { color: #ffffff !important; }
 .rank-bubble { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); width: 56px; height: 56px; border-radius: var(--radius-pill); background: var(--ink-primary); color: var(--ink-light); font-weight: 600; display: grid; place-items: center; font-size: 18px; border: 4px solid var(--bg-primary); }
 .rank-1 .rank-bubble { background: var(--ink-primary); } /* Markcon relies heavily on Black/White contrast */
 
@@ -448,8 +524,8 @@ textarea { min-height: 120px; resize: vertical; }
   max-width: 900px;
   margin: 0 auto;
 }
-.hero-copy h1 { font-family: 'Instrument Serif', serif; font-size: clamp(80px, 10vw, 120px); letter-spacing: -0.02em; line-height: 0.9; margin-bottom: 32px; color: inherit; font-weight: 400; }
-.hero-subtitle { font-family: 'Manrope', sans-serif; font-size: 22px; color: var(--ink-secondary); line-height: 1.5; max-width: 600px; margin: 0 auto 40px; }
+.hero-copy h1 { font-family: 'Instrument Serif', serif; font-size: clamp(80px, 10vw, 120px); letter-spacing: -0.02em; line-height: 0.9; margin-bottom: 32px; color: #ffffff; font-weight: 400; }
+.hero-subtitle { font-family: 'Manrope', sans-serif; font-size: 22px; color: rgba(255,255,255,0.82); line-height: 1.5; max-width: 600px; margin: 0 auto 40px; }
 .hero-actions { display: flex; gap: 16px; justify-content: center; }
 
 /* Markcon Gallery */
@@ -534,6 +610,8 @@ textarea { min-height: 120px; resize: vertical; }
   }
   
   .nav-links .btn { width: 80%; text-align: center; font-size: 18px; padding: 16px; }
+  /* Mobile nav is full dark screen - all link text white */
+  .nav-links a, .nav-links .nav-link { color: #ffffff !important; }
   .profile { flex-direction: column; text-align: center; }
   .podium { grid-template-columns: 1fr; gap: 40px; }
   .rank-bubble { top: -28px; left: 50%; transform: translateX(-50%); }
@@ -557,8 +635,8 @@ textarea { min-height: 120px; resize: vertical; }
 
 .process-card {
   min-width: 320px;
-  background: var(--bg-primary);
-  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.14);
   border-radius: var(--radius-lg);
   padding: 40px;
   scroll-snap-align: start;
@@ -568,6 +646,7 @@ textarea { min-height: 120px; resize: vertical; }
   justify-content: space-between;
   min-height: 280px;
   transition: var(--transition);
+  color: #ffffff;
 }
 .process-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); }
 
@@ -578,31 +657,31 @@ textarea { min-height: 120px; resize: vertical; }
   line-height: 0.8;
   margin-bottom: 24px;
 }
-.process-card.active .process-num { color: var(--ink-primary); }
-.process-card.demo .process-num { color: var(--accent2); }
+.process-card.active .process-num { color: #ffffff; }
+.process-card.demo .process-num { color: rgba(255,255,255,0.5); }
 
-.process-card h3 { font-size: 24px; margin-bottom: 12px; }
-.process-card p { color: var(--ink-secondary); font-size: 15px; margin: 0; }
+.process-card h3 { font-size: 24px; margin-bottom: 12px; color: #ffffff !important; }
+.process-card p { color: rgba(255,255,255,0.78) !important; font-size: 15px; margin: 0; }
 
 /* Exact Markcon Journey Styles */
 .journey-hero { text-align: center; margin: 80px 0 60px; max-width: 800px; margin-left: auto; margin-right: auto; }
 .journey-hero h1 { font-family: 'Instrument Serif', serif; font-size: clamp(64px, 8vw, 96px); }
-.mini-title { text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Manrope', sans-serif; font-size: 12px; font-weight: 700; color: var(--ink-secondary); margin-bottom: 16px; display: block; }
+.mini-title { text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Manrope', sans-serif; font-size: 12px; font-weight: 700; color: rgba(255, 255, 255, 0.6); margin-bottom: 16px; display: block; }
 .journey-tabs { display: flex; gap: 12px; overflow-x: auto; padding: 16px 0; margin-bottom: 40px; }
-.journey-tab { white-space: nowrap; padding: 12px 24px; border-radius: var(--radius-pill); background: var(--bg-primary); color: var(--ink-primary); font-family: 'Manrope', sans-serif; font-weight: 600; font-size: 14px; border: 1px solid var(--line); transition: var(--transition); }
-.journey-tab:hover { background: var(--bg-secondary); }
+.journey-tab { white-space: nowrap; padding: 12px 24px; border-radius: var(--radius-pill); background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.85); font-family: 'Manrope', sans-serif; font-weight: 600; font-size: 14px; border: 1px solid rgba(255,255,255,0.2); transition: var(--transition); }
+.journey-tab:hover { background: rgba(255,255,255,0.18); }
 .journey-timeline { display: grid; gap: 40px; }
-.session-card { display: grid; grid-template-columns: 1fr 1.2fr; gap: 40px; align-items: center; background: var(--bg-primary); padding: 32px; border-radius: var(--radius-lg); border: 1px solid var(--line); box-shadow: var(--shadow-card); transition: var(--transition); }
+.session-card { display: grid; grid-template-columns: 1fr 1.2fr; gap: 40px; align-items: center; background: rgba(255,255,255,0.06); padding: 32px; border-radius: var(--radius-lg); border: 1px solid rgba(255,255,255,0.12); box-shadow: var(--shadow-card); transition: var(--transition); color: #ffffff; }
 .session-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); }
 .session-image-box { position: relative; height: 320px; overflow: hidden; border-radius: var(--radius-lg); }
 .session-image-box img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); filter: grayscale(15%); }
 .session-card:hover img { transform: scale(1.05); filter: grayscale(0%); }
-.session-tag { position: absolute; left: 24px; bottom: 24px; padding: 8px 16px; border-radius: var(--radius-pill); background: var(--bg-primary); color: var(--ink-primary); font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; }
-.session-date { font-family: 'Manrope', sans-serif; font-weight: 600; color: var(--ink-secondary); margin-bottom: 12px; display: block; }
-.session-content h2 { font-family: 'Instrument Serif', serif; font-size: 48px; margin-bottom: 16px; }
-.speaker-box { margin-top: 32px; padding: 24px; border-radius: var(--radius-md); background: var(--bg-secondary); display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--line); }
-.speaker-box small { color: var(--ink-secondary); font-family: 'Manrope', sans-serif; font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em; }
-.speaker-box h3 { font-family: 'Manrope', sans-serif; font-size: 18px; margin: 4px 0 0; }
+.session-tag { position: absolute; left: 24px; bottom: 24px; padding: 8px 16px; border-radius: var(--radius-pill); background: rgba(0,0,0,0.7); color: #ffffff; font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; }
+.session-date { font-family: 'Manrope', sans-serif; font-weight: 600; color: rgba(255,255,255,0.65); margin-bottom: 12px; display: block; }
+.session-content h2 { font-family: 'Instrument Serif', serif; font-size: 48px; margin-bottom: 16px; color: #ffffff !important; }
+.speaker-box { margin-top: 32px; padding: 24px; border-radius: var(--radius-md); background: rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.15); }
+.speaker-box small { color: rgba(255,255,255,0.6) !important; font-family: 'Manrope', sans-serif; font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em; }
+.speaker-box h3 { font-family: 'Manrope', sans-serif; font-size: 18px; margin: 4px 0 0; color: #ffffff !important; }
 .linkedin-btn { padding: 8px 20px; border-radius: var(--radius-pill); background: var(--ink-primary); color: var(--ink-light); font-family: 'Manrope', sans-serif; font-weight: 600; font-size: 13px; }
 @media (max-width: 800px) { .session-card { grid-template-columns: 1fr; } .speaker-box { flex-direction: column; align-items: flex-start; gap: 16px; } }
 

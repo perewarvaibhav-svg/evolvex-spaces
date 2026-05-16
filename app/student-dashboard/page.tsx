@@ -13,8 +13,8 @@ export default async function StudentDashboard() {
   const userId = session.user_id;
   const user = await getUser(userId);
   const tasks = await query(
-    `SELECT t.*, COALESCE(s.status,'Not Started') status, s.work_note, s.proof_link, s.submitted_at, s.points_awarded FROM tasks t LEFT JOIN submissions s ON s.task_id=t.id AND s.user_id=? WHERE t.week=? ORDER BY t.due_date, t.id`,
-    [userId, currentWeek()]
+    `SELECT t.*, COALESCE(s.status,'Not Started') status, s.work_note, s.proof_link, s.submitted_at, s.points_awarded FROM tasks t LEFT JOIN submissions s ON s.task_id=t.id AND s.user_id=? ORDER BY t.due_date, t.id`,
+    [userId]
   );
   const journey = await query('SELECT * FROM journey WHERE user_id=? ORDER BY created_at DESC LIMIT 10', [userId]);
   const badges = await query('SELECT * FROM badges WHERE user_id=?', [userId]);
@@ -28,8 +28,9 @@ export default async function StudentDashboard() {
     `SELECT e.title, e.event_date, e.event_type, e.mode event_mode, a.status, a.mode, a.reason, a.takeaway, a.points_awarded, a.marked_at FROM attendance a JOIN attendance_events e ON e.id=a.event_id WHERE a.user_id=? ORDER BY e.event_date DESC, a.id DESC`,
     [userId]
   );
-  const todayRevenue = await query('SELECT id FROM activities WHERE user_id=? AND type=? AND date(created_at)=date(?)', [userId, 'revenue', new Date().toISOString()], true);
-  const todayConversation = await query('SELECT id FROM activities WHERE user_id=? AND type=? AND date(created_at)=date(?)', [userId, 'conversation', new Date().toISOString()], true);
+  const todayRevenue = await query('SELECT id FROM activities WHERE user_id=? AND type=? AND CAST(created_at AS DATE) = CAST(? AS DATE)', [userId, 'revenue', new Date().toISOString()], true);
+  const todayConversation = await query('SELECT id FROM activities WHERE user_id=? AND type=? AND CAST(created_at AS DATE) = CAST(? AS DATE)', [userId, 'conversation', new Date().toISOString()], true);
+  const announcements = await query('SELECT * FROM announcements WHERE expires_at >= ?::timestamp ORDER BY created_at DESC', [new Date().toISOString()]);
 
   return (
     <StudentDashboardClient 
@@ -42,6 +43,7 @@ export default async function StudentDashboard() {
       attendance_history={attendanceHistory}
       today_revenue={todayRevenue}
       today_conversation={todayConversation}
+      announcements={announcements}
       current_week={currentWeek()}
     />
   );

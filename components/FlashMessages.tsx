@@ -20,6 +20,14 @@ export default function FlashMessages({ messages: initialMessages }: { messages:
     }
   }, [initialMessages]);
 
+  // Automatically clear messages from UI after 3 seconds
+  useEffect(() => {
+    if (messages && messages.length > 0) {
+      const timer = setTimeout(() => setMessages([]), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [messages]);
+
   if (!messages || messages.length === 0) return null;
 
   return (

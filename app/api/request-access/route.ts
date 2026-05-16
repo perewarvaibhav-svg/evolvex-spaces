@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getIronSession } from 'iron-session';
 import { sessionOptions, SessionData } from '@/lib/session';
-import { execute, query } from '@/lib/db';
+import { execute, query, hashPassword } from '@/lib/db';
 
 export async function POST(req: NextRequest) {
   const res = NextResponse.next();
@@ -18,9 +18,11 @@ export async function POST(req: NextRequest) {
   const body = await req.formData();
   const name = (body.get('name') as string)?.trim() || '';
   const email = (body.get('email') as string)?.trim().toLowerCase() || '';
+  const requestedRole = (body.get('requested_role') as string)?.trim() || 'student';
+  const password = (body.get('password') as string)?.trim() || '';
   
-  if (!name || !email || !email.includes('@')) {
-    session.flash = [{ cat: 'error', msg: 'Valid name and email are required.' }];
+  if (!name || !email || !email.includes('@') || !password) {
+    session.flash = [{ cat: 'error', msg: 'Valid name, email and password are required.' }];
     return await getRedirect('/request-access');
   }
 
@@ -47,8 +49,9 @@ export async function POST(req: NextRequest) {
   const nowIso = () => new Date().toISOString().slice(0, 16).replace('T', ' ');
 
   try {
-    await execute('INSERT INTO access_requests(name, email, status, created_at) VALUES(?,?,?,?)', [
-      name, email, 'pending', nowIso()
+    const hashed = hashPassword(password);
+    await execute('INSERT INTO access_requests(name, email, status, created_at, requested_role, password_hash) VALUES(?,?,?,?,?,?)', [
+      name, email, 'pending', nowIso(), requestedRole, hashed
     ]);
     session.flash = [{ cat: 'success', msg: 'Access request submitted! An admin will review it.' }];
     return await getRedirect('/login');

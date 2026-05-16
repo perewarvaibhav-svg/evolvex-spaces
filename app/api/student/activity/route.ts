@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     session.flash = [{ cat: 'warning', msg: 'Invalid status.' }];
     return await getRedirect();
   }
-  const already = await query('SELECT id FROM activities WHERE user_id=? AND type=? AND date(created_at)=date(?)', [userId, typ, new Date().toISOString()], true);
+  const already = await query('SELECT id FROM activities WHERE user_id=? AND type=? AND CAST(created_at AS DATE) = CAST(? AS DATE)', [userId, typ, new Date().toISOString()], true);
   if (already) {
     session.flash = [{ cat: 'warning', msg: 'Already submitted today.' }];
     return await getRedirect();

@@ -6,8 +6,28 @@ import ClientScripts from '@/components/ClientScripts';
 import { getSession } from '@/lib/session';
 
 export const metadata: Metadata = {
-  title: 'EvolveX Cohort Dashboard',
-  description: 'Building a more connected startup ecosystem for Bharat.',
+  title: {
+    default: 'EvolveX Cohort Dashboard | Learn. Build. Launch.',
+    template: '%s | EvolveX'
+  },
+  description: 'A 90-day builder journey where students explore ideas, learn by doing, talk to real users, and turn small sparks into working projects.',
+  keywords: ['startup', 'founder sprint', 'builder journey', 'EvolveX', 'entrepreneurship', 'incubator', 'startup ecosystem', 'Bharat'],
+  authors: [{ name: 'EvolveX Team' }],
+  creator: 'EvolveX',
+  publisher: 'EvolveX',
+  openGraph: {
+    type: 'website',
+    locale: 'en_IN',
+    url: 'https://evolvex.in',
+    title: 'EvolveX Cohort Dashboard',
+    description: 'A 90-day builder journey for founders. Learn. Build. Launch.',
+    siteName: 'EvolveX',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'EvolveX Cohort Dashboard',
+    description: 'A 90-day builder journey for founders. Learn. Build. Launch.',
+  },
 };
 
 export default async function RootLayout({

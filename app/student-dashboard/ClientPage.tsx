@@ -6,9 +6,10 @@ const STAGES_ARR = ['Idea', 'Validated', 'Prototype', 'First Outreach', 'First C
 const CATEGORIES_ARR = ['AI', 'SaaS', 'Community', 'Health', 'Education', 'Fintech', 'Other'];
 
 export default function StudentDashboardClient({
-  user, tasks, journey, badges, rank, attendance_events, attendance_history, today_revenue, today_conversation, current_week
+  user, tasks, journey, badges, rank, attendance_events, attendance_history, today_revenue, today_conversation, announcements, current_week
 }: any) {
   const [activeTab, setActiveTab] = useState('activity');
+  const [selectedWeek, setSelectedWeek] = useState(current_week || 1);
 
   return (
     <>
@@ -21,6 +22,17 @@ export default function StudentDashboardClient({
         <a className="btn ghost" href={`/student/${user.id}`}>View public profile</a>
       </section>
 
+      {announcements && announcements.length > 0 && (
+        <section className="reveal-up" style={{ marginBottom: 32, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {announcements.map((a: any) => (
+            <div key={a.id} className={`flash ${a.priority === 'urgent' ? 'error' : a.priority === 'info' ? 'success' : 'warning'}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+              <strong style={{ display: 'block', marginBottom: 4 }}>📢 {a.title}</strong>
+              <span style={{ fontSize: 14 }}>{a.body}</span>
+            </div>
+          ))}
+        </section>
+      )}
+
       <section className="stats grid-4 reveal-up">
         <div className="stat stagger-in"><b>#{rank || '-'}</b><span>Rank</span></div>
         <div className="stat stagger-in"><b>{user.points}</b><span>Points</span></div>
@@ -32,74 +44,83 @@ export default function StudentDashboardClient({
         <div className="flash warning reveal-up">Please change your temporary password and complete your profile.</div>
       ) : null}
 
-      <div className="layout-split">
-        <section className="card" id="tasks-panel">
-          <h2>Week {current_week} Tasks</h2>
-          <div className="kanban">
-            {['Not Started', 'In Progress', 'Done'].map(col => (
-              <div key={col} className="lane stagger-in">
-                <h3>{col}</h3>
-                {tasks.filter((t: any) => t.status === col).length > 0 ? (
-                  tasks.filter((t: any) => t.status === col).map((t: any) => (
-                    <form key={t.id} className="task-card" method="post" action={`/api/student/task/${t.id}/status`}>
+      <div>
+        <section className="card" id="tasks-panel" style={{ minWidth: 0 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <h2>My Tasks</h2>
+          </div>
+          
+          <div className="week-slider" style={{ display: 'flex', overflowX: 'auto', gap: 12, paddingBottom: 16, marginBottom: 24, borderBottom: '1px solid var(--border)' }}>
+            {Array.from({ length: 12 }).map((_, i) => {
+              const w = i + 1;
+              return (
+                <button 
+                  key={w}
+                  type="button"
+                  onClick={() => setSelectedWeek(w)}
+                  className={`btn small ${selectedWeek === w ? '' : 'ghost'}`}
+                  style={{ whiteSpace: 'nowrap', borderRadius: 20 }}
+                >
+                  Week {w}
+                </button>
+              );
+            })}
+          </div>
+
+          <p className="muted" style={{ marginBottom: 24 }}>Submit your work via GitHub URL, Prototype link, or Google Drive file link.</p>
+          
+          <div className="kanban" style={{ gridTemplateColumns: '1fr 1fr' }}>
+            <div className="lane stagger-in">
+              <h3>Pending Tasks</h3>
+              {tasks.filter((t: any) => t.week === selectedWeek && t.status !== 'Done').length > 0 ? (
+                tasks.filter((t: any) => t.week === selectedWeek && t.status !== 'Done').map((t: any) => (
+                  <form key={t.id} className="task-card" method="post" action={`/api/student/task/${t.id}/status`}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <span className="pill" style={{ marginBottom: 8 }}>Week {t.week}</span>
                       <span className="points">{t.points} pts</span>
-                      <h4>{t.title}</h4>
-                      <p>{t.description}</p>
-                      <p className="due" data-due={t.due_date}>Due: {t.due_date}</p>
-                      <select name="status" defaultValue={t.status}>
-                        <option value="Not Started">Not Started</option>
-                        <option value="In Progress">In Progress</option>
-                        <option value="Done">Done</option>
-                      </select>
-                      <textarea name="work_note" placeholder="What did you do?" defaultValue={t.work_note || ''}></textarea>
-                      <input name="proof_link" placeholder="Optional proof/screenshot link" defaultValue={t.proof_link || ''} />
-                      <button className="btn">Update</button>
-                    </form>
-                  ))
-                ) : (
-                  <p className="muted">No tasks here.</p>
-                )}
-              </div>
-            ))}
+                    </div>
+                    <h4>{t.title}</h4>
+                    <p>{t.description}</p>
+                    <p className="due" data-due={t.due_date}>Due: {t.due_date}</p>
+                    <select name="status" defaultValue={t.status}>
+                      <option value="Not Started">Not Started</option>
+                      <option value="In Progress">In Progress</option>
+                      <option value="Done">Mark as Done</option>
+                    </select>
+                    <textarea name="work_note" placeholder="What did you do?" defaultValue={t.work_note || ''}></textarea>
+                    <input name="proof_link" type="url" placeholder="GitHub, Figma, or Drive URL" defaultValue={t.proof_link || ''} />
+                    <button className="btn">Submit Work</button>
+                  </form>
+                ))
+              ) : (
+                <p className="muted">No pending tasks for Week {selectedWeek}.</p>
+              )}
+            </div>
+
+            <div className="lane stagger-in">
+              <h3>Completed Tasks</h3>
+              {tasks.filter((t: any) => t.week === selectedWeek && t.status === 'Done').length > 0 ? (
+                tasks.filter((t: any) => t.week === selectedWeek && t.status === 'Done').map((t: any) => (
+                  <form key={t.id} className="task-card" method="post" action={`/api/student/task/${t.id}/status`}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <span className="pill" style={{ marginBottom: 8 }}>Week {t.week}</span>
+                      <span className="points" style={{ color: 'var(--success)' }}>{t.points_awarded ?? t.points} pts Earned</span>
+                    </div>
+                    <h4>{t.title}</h4>
+                    <p className="due" style={{ color: 'var(--success)' }}>Submitted on {t.submitted_at?.slice(0, 10)}</p>
+                    <textarea name="work_note" placeholder="What did you do?" defaultValue={t.work_note || ''}></textarea>
+                    <input name="proof_link" type="url" placeholder="GitHub, Figma, or Drive URL" defaultValue={t.proof_link || ''} />
+                    <input type="hidden" name="status" value="Done" />
+                    <button className="btn ghost small" style={{ marginTop: 8 }}>Update Submission</button>
+                  </form>
+                ))
+              ) : (
+                <p className="muted">No completed tasks for Week {selectedWeek}.</p>
+              )}
+            </div>
           </div>
         </section>
 
-        <section className="card" id="profile-panel">
-          <h2>Edit Student Profile</h2>
-          <form className="form" method="post" action="/api/student/update-profile">
-            <label>Name<input name="name" defaultValue={user.name} /></label>
-            <label>Photo URL<input name="photo" defaultValue={user.photo} /></label>
-            <label>Project Name<input name="project_name" defaultValue={user.project_name} /></label>
-            <label>One‑liner<input name="one_liner" defaultValue={user.one_liner} /></label>
-            <label>Problem<textarea name="problem" defaultValue={user.problem}></textarea></label>
-            <label>Project Link<input name="project_link" defaultValue={user.project_link} /></label>
-            <label>LinkedIn<input name="linkedin" defaultValue={user.linkedin} /></label>
-            <label>Category
-              <select name="category" defaultValue={user.category}>
-                {CATEGORIES_ARR.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </label>
-            <label>Stage
-              <select name="stage" defaultValue={user.stage}>
-                {STAGES_ARR.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
-            </label>
-            <label className="check">
-              <input type="checkbox" name="is_public" defaultChecked={user.is_public === 1} /> 
-              Make project public
-            </label>
-            <button className="btn big">Save Profile</button>
-          </form>
-          
-          <form className="form" method="post" action="/api/student/change-password" style={{ marginTop: 32 }}>
-            <h2>Password Manager</h2>
-            <p className="muted">Change your password anytime. A confirmation email will be sent.</p>
-            <label>Current Password<input type="password" name="current_password" required /></label>
-            <label>New Password<input type="password" name="new_password" required /></label>
-            <label>Confirm New Password<input type="password" name="confirm_password" required /></label>
-            <button className="btn big">Change Password</button>
-          </form>
-        </section>
       </div>
 
       <div className="tab-buttons">

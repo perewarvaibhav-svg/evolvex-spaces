@@ -16,7 +16,7 @@ export default function Login() {
           <button className="btn big">Log in to Dashboard</button>
         </form>
         <p className="muted" style={{ textAlign: 'center', marginTop: 16 }}>
-          Don't have an account? <a href="/request-access" style={{ color: 'var(--primary)' }}>Request Access</a>
+          Request Access: <a href="/request-access/intern" style={{ color: 'var(--primary)', fontWeight: 600 }}>Cohort Intern</a> &middot; <a href="/request-access/admin" style={{ color: 'var(--primary)', fontWeight: 600 }}>Admin</a>
         </p>
       </div>
     </div>

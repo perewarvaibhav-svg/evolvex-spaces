@@ -21,7 +21,14 @@ export default function Navbar({ session }: { session: { user_id?: number, role?
         <Link href="/leaderboard" onClick={() => setIsOpen(false)}>Leaderboard</Link>
         {session.user_id ? (
           <>
-            <Link href="/dashboard" onClick={() => setIsOpen(false)}>Dashboard</Link>
+            {session.role === 'admin' ? (
+              <Link href="/admin" onClick={() => setIsOpen(false)}>Dashboard</Link>
+            ) : (
+              <>
+                <Link href="/student-dashboard" onClick={() => setIsOpen(false)}>Dashboard</Link>
+                <Link href="/student-profile" className="nav-link" onClick={() => setIsOpen(false)}>Profile</Link>
+              </>
+            )}
             <a className="btn ghost" href="/api/auth/logout">Logout</a>
           </>
         ) : (

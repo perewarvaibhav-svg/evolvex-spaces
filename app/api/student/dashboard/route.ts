@@ -29,8 +29,8 @@ export async function GET(req: NextRequest) {
     `SELECT e.title, e.event_date, e.event_type, e.mode event_mode, a.status, a.mode, a.reason, a.takeaway, a.points_awarded, a.marked_at FROM attendance a JOIN attendance_events e ON e.id=a.event_id WHERE a.user_id=? ORDER BY e.event_date DESC, a.id DESC`,
     [userId]
   );
-  const todayRevenue = await query('SELECT id FROM activities WHERE user_id=? AND type=? AND date(created_at)=date(?)', [userId, 'revenue', new Date().toISOString()], true);
-  const todayConversation = await query('SELECT id FROM activities WHERE user_id=? AND type=? AND date(created_at)=date(?)', [userId, 'conversation', new Date().toISOString()], true);
+  const todayRevenue = await query('SELECT id FROM activities WHERE user_id=? AND type=? AND CAST(created_at AS DATE) = CAST(? AS DATE)', [userId, 'revenue', new Date().toISOString()], true);
+  const todayConversation = await query('SELECT id FROM activities WHERE user_id=? AND type=? AND CAST(created_at AS DATE) = CAST(? AS DATE)', [userId, 'conversation', new Date().toISOString()], true);
 
   const flash = session.flash || [];
   session.flash = [];
