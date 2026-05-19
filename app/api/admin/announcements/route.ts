@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getIronSession } from 'iron-session';
 import { sessionOptions, SessionData } from '@/lib/session';
 import { execute } from '@/lib/db';
-import { nowIso } from '@/lib/helpers';
+import { nowIso, blastEmail } from '@/lib/helpers';
 
 export async function POST(req: NextRequest) {
   const res = NextResponse.next();
